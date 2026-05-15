@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Domain Proxy Router",
+  "version": "2.0.6",
+  "description": "Универсальный прокси-маршрутизатор для Firefox",
+  "permissions": ["proxy", "storage"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "homepage_url": "https://github.com/jobgomel/firefox-domain-proxy-router",
+  "author": "Alexander Zakharenko"
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Настройки прокси"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "universal-proxy@example.com",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "collects_data": false,
+        "required": [
+          "none"
+        ]
+      }
+    }
+  }
+}
