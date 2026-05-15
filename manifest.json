@@ -15,7 +15,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "universal-proxy@example.com",
+      "id": "firefox-domain-proxy-router@jobgomel",
       "strict_min_version": "142.0",
       "data_collection_permissions": {
         "collects_data": false,
