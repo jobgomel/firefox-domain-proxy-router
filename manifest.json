@@ -8,7 +8,7 @@
     "scripts": ["background.js"]
   },
   "homepage_url": "https://github.com/jobgomel/firefox-domain-proxy-router",
-  "author": "Alexander Zakharenko"
+  "author": "Alexander Zakharenko",
   "action": {
     "default_popup": "popup.html",
     "default_title": "Настройки прокси"
