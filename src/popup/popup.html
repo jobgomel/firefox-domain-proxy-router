@@ -109,10 +109,15 @@
         body.dark .btn-settings:hover {
             background-color: #475569;
         }
+        body select { 
+            background: #fff;
+            color: #334155; 
+            border-color: #475569; 
+        }
         body.dark select { 
             background: #334155;
             color: #fff; 
-            border-color: #475569; 
+            border-color: #475569 !important; 
         }
     </style>
 </head>
@@ -131,7 +136,7 @@
 
     <div class="switch-container" style="flex-direction: column; align-items: flex-start; gap: 8px;">
         <span class="switch-label" style="font-size: 0.85rem; color: var(--text-muted);">Режим маршрутизации:</span>
-        <select id="routing-mode" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0; background: #fff; font-size: 0.85rem; cursor: pointer;">
+        <select id="routing-mode" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;  font-size: 0.85rem; cursor: pointer;">
             <option value="global">🌍 Глобальный (Все запросы)</option>
             <option value="tab">📌 По контексту вкладки (Изоляция)</option>
         </select>
