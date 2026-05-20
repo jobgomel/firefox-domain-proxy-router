@@ -3,6 +3,11 @@ import { matchRule } from './utils.js';
 import { addHostToTab, setTabIconProxied } from './ui.js';
 
 export function handleProxyRequest(details) {
+    // НОВАЯ ПРОВЕРКА: Если расширение выключено глобально — пускаем всё напрямую
+    if (!state.isEnabled) {
+        return { type: "direct" };
+    }
+    
     const url = new URL(details.url);
     
     // 1. Проверка: идет ли сейчас тест прокси

@@ -22,11 +22,12 @@
     "scripts": ["src/background/main.js"],
     "type": "module"
   },
-  "action": {
-    "default_title": "Открыть настройки Proxy Router",
+"action": {
+    "default_title": "Управление Proxy Router",
     "default_icon": {
       "16": "icons/icon-32.png"
-    }
+    },
+    "default_popup": "src/popup/popup.html"
   },
   "options_ui": {
     "page": "src/options/options.html",
