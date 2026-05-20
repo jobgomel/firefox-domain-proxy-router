@@ -208,10 +208,15 @@ function renderDomains() {
 
 function renderRules() {
     const list = document.getElementById('rule-list');
-    list.innerHTML = '';
+    list.innerHTML = ''; // Очистка статического/пустого содержимого через innerHTML разрешена
     
     if (appState.rules.length === 0) {
-        list.innerHTML = '<div style="color:var(--text-muted); font-size:0.875rem;">Нет активных правил трафика</div>';
+        // Безопасное добавление заглушки без innerHTML
+        const emptyDiv = document.createElement('div');
+        emptyDiv.style.color = 'var(--text-muted)';
+        emptyDiv.style.fontSize = '0.875rem';
+        emptyDiv.textContent = 'Нет активных правил трафика';
+        list.appendChild(emptyDiv);
         return;
     }
 
@@ -226,14 +231,33 @@ function renderRules() {
         const info = document.createElement('div');
         info.className = 'card-info';
         
+        // --- БЕЗОПАСНЫЙ СБОР ТИТУЛА ---
         const title = document.createElement('span');
         title.className = 'card-title';
-        title.innerHTML = `Если подходит под маски <span style="color:var(--primary)">[${dName}]</span>`;
         
+        // Добавляем статическую текстовую часть
+        const titleText = document.createTextNode('Если подходит под маски ');
+        title.appendChild(titleText);
+        
+        // Создаем стилизованный span для имени домена
+        const domainSpan = document.createElement('span');
+        domainSpan.style.color = 'var(--primary)';
+        domainSpan.textContent = `[${dName}]`; // textContent экранирует любые спецсимволы и теги
+        title.appendChild(domainSpan);
+        
+        // --- БЕЗОПАСНЫЙ СБОР ПОДЗАГОЛОВКА ---
         const sub = document.createElement('span');
         sub.className = 'card-sub';
-        sub.innerHTML = `Направлять через прокси: <b>${pName}</b>`;
         
+        const subText = document.createTextNode('Направлять через прокси: ');
+        sub.appendChild(subText);
+        
+        // Создаем жирный элемент для имени прокси
+        const proxyBold = document.createElement('b');
+        proxyBold.textContent = pName; // Безопасное присвоение
+        sub.appendChild(proxyBold);
+        
+        // Собираем структуру воедино
         info.appendChild(title);
         info.appendChild(sub);
         
