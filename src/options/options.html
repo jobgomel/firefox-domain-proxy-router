@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Панель управления Proxy Router</title>
+    <style>
+        /* Имитация дизайн-системы Tailwind CSS */
+        body {
+            --bg-main: #f8fafc; /* slate-50 */
+            --bg-card: #ffffff;
+            --bg-row: #f8fafc;
+            --bg-input: #ffffff;
+            --text-main: #0f172a; /* slate-900 */
+            --text-muted: #64748b; /* slate-500 */
+            --primary: #4f46e5; /* indigo-600 */
+            --primary-hover: #4338ca; /* indigo-700 */
+            --border: #e2e8f0; /* slate-200 */
+            --text-success: #166534;
+            --bg-success: #f0fdf4;
+            --border-success: #bbf7d0;
+        }
+        
+        body.dark {
+            --bg-main: #0f172a; /* slate-900 */
+            --bg-card: #1e293b; /* slate-800 */
+            --bg-row: #0f172a;
+            --bg-input: #334155; /* slate-700 */
+            --text-main: #f8fafc; /* slate-50 */
+            --text-muted: #94a3b8; /* slate-400 */
+            --border: #334155;
+            --text-success: #4ade80; /* green-400 */
+            --bg-success: #052e16;
+            --border-success: #15803d;
+        }
+
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 2rem; transition: background-color 0.2s ease, color 0.2s ease; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Шапка */
+        header { margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        h1 { font-size: 1.75rem; font-weight: 700; margin: 0; letter-spacing: -0.025em; }
+        .btn-theme { margin-left: auto; font-size: 0.875rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 9999px; }
+
+        /* ВКЛАДКИ (Tabs) */
+        .tabs-nav { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 2rem; }
+        .tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.15s ease; }
+        .tab-btn:hover { color: var(--text-main); background-color: var(--bg-row); }
+        .tab-btn.active { color: var(--primary); background-color: rgba(79, 70, 229, 0.1); }
+        body.dark .tab-btn.active { color: #818cf8; background-color: rgba(129, 140, 248, 0.15); }
+        
+        /* Контент вкладок (по умолчанию скрыт) */
+        .tab-content { display: none; }
+        .tab-content.active { display: grid; grid-template-columns: 1fr 1.25fr; gap: 2rem; }
+        @media (max-width: 768px) { .tab-content.active { grid-template-columns: 1fr; } }
+        
+        /* Карточки */
+        section { background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 0.75rem; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); }
+        h3 { font-size: 1.1rem; font-weight: 600; margin-top: 0; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        
+        /* Формы */
+        .form-group { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+        .input-row { display: flex; gap: 0.5rem; }
+        input, select, textarea { flex: 1; padding: 0.625rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.875rem; background-color: var(--bg-input); color: var(--text-main); outline: none; transition: border-color 0.15s ease; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        textarea { resize: vertical; min-height: 120px; line-height: 1.4; }
+        
+        /* Кнопки */
+        button { font-weight: 500; font-size: 0.875rem; padding: 0.625rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; gap: 4px; background-color: var(--bg-input); color: var(--text-main); }
+        button:hover { opacity: 0.9; }
+        .btn-primary { background-color: var(--primary); color: white; border: none; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        
+        .btn-test { background-color: var(--bg-success); color: var(--text-success); border-color: var(--border-success); font-size: 0.75rem; padding: 0.35rem 0.75rem; }
+        .btn-edit { background-color: #fff9db; color: #92400e; border-color: #fde68a; font-size: 0.75rem; padding: 0.35rem 0.75rem; }
+        body.dark .btn-edit { background-color: #78350f; color: #fef3c7; border-color: #92400e; }
+        .btn-del { background-color: #fef2f2; color: #991b1b; border-color: #fecaca; font-size: 0.75rem; padding: 0.35rem 0.75rem; }
+        body.dark .btn-del { background-color: #4c0519; color: #fee2e2; border-color: #991b1b; }
+        #cancel-edit, #cancel-domain-edit { display: none; background-color: var(--border); }
+
+        /* Динамические списки */
+        .item-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .card-row { background: var(--bg-row); border: 1px solid var(--border); padding: 1rem; border-radius: 0.625rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+        .card-info { display: flex; flex-direction: column; gap: 0.25rem; max-width: 65%; }
+        .card-title { font-weight: 600; font-size: 0.95rem; color: var(--text-main); }
+        .card-sub { font-size: 0.8rem; color: var(--text-muted); font-family: monospace; word-break: break-all; }
+        .badge { display: inline-block; padding: 0.125rem 0.5rem; font-size: 0.75rem; font-weight: 600; border-radius: 0.25rem; margin-left: 0.5rem; white-space: nowrap; }
+        .badge-auth { background: #e0f2fe; color: #0369a1; }
+        .badge-noauth { background: var(--border); color: var(--text-muted); }
+        .controls-wrapper { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; }
+        .status-text { font-size: 0.8rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+            <h1>Proxy Router Manager</h1>
+            <button id="theme-toggle" class="btn-theme">🌙 Темная тема</button>
+        </header>
+
+        <!-- ПАНЕЛЬ ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК -->
+        <nav class="tabs-nav">
+            <button class="tab-btn active" data-tab="proxies">🌐 Управление прокси</button>
+            <button class="tab-btn" data-tab="routing">⚡ Маршрутизация по маскам</button>
+        </nav>
+
+        <!-- ВКЛАДКА 1: ПРОКСИ -->
+        <div id="tab-content-proxies" class="tab-content active">
+            <div class="forms-column">
+                <section>
+                    <h3>🌐 Добавить / Изменить прокси</h3>
+                    <div class="form-group">
+                        <div class="input-row">
+                            <input type="text" id="p-name" placeholder="Название (напр. Proxy SOCKS)">
+                            <select id="p-type" style="max-width: 110px;">
+                                <option value="socks">SOCKS5</option>
+                                <option value="http">HTTP</option>
+                            </select>
+                        </div>
+                        <div class="input-row">
+                            <input type="text" id="p-host" placeholder="Host или IP или socks5://login:passwd@host:port">
+                            <input type="number" id="p-port" placeholder="Порт" style="max-width: 90px;">
+                        </div>
+                        <div class="input-row">
+                            <input type="text" id="p-user" placeholder="Логин (опционально)">
+                            <input type="text" id="p-pass" placeholder="Пароль (опционально)">
+                        </div>
+                        <div class="input-row">
+                            <button id="btn-add-proxy" class="btn-primary" style="flex: 2;">Добавить прокси</button>
+                            <button id="cancel-edit">Отмена</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="lists-column">
+                <section>
+                    <h3>Ваши прокси-серверы</h3>
+                    <div id="proxy-list" class="item-list"></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 2: МАРШРУТИЗАЦИЯ И МАСКИ -->
+        <div id="tab-content-routing" class="tab-content">
+            <div class="forms-column">
+                <section>
+                    <h3>📝 Создать / Изменить список масок</h3>
+                    <div class="form-group">
+                        <input type="text" id="d-name" placeholder="Название списка (напр. Соцсети)">
+                        <textarea id="d-domains" placeholder="Вставьте маски, каждую с новой строки:&#10;*.example.com&#10;site.com/app/*&#10;*.mywork.org"></textarea>
+                        <div class="input-row">
+                            <button id="btn-add-domain" class="btn-primary" style="flex: 2;">Добавить список</button>
+                            <button id="cancel-domain-edit">Отмена</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>⚡ Активировать правило маршрутизации</h3>
+                    <div class="form-group">
+                        <select id="r-domain"></select>
+                        <div style="text-align: center; font-size: 0.9rem; color: var(--text-muted);">направлять через</div>
+                        <select id="r-proxy"></select>
+                        <button id="btn-add-rule" class="btn-primary">Включить маршрут</button>
+                    </div>
+                </section>
+            </div>
+            <div class="lists-column">
+                <section>
+                    <h3>Активные правила проксирования</h3>
+                    <div id="rule-list" class="item-list"></div>
+                </section>
+
+                <section>
+                    <h3>Списки доменов / путей</h3>
+                    <div id="domain-list" class="item-list"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="options.js"></script>
+</body>
+</html>

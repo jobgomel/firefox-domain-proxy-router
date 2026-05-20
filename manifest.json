@@ -1,28 +1,41 @@
 {
   "manifest_version": 3,
-  "name": "Domain Proxy Router",
-  "version": "2.0.7",
-  "description": "Универсальный прокси-маршрутизатор для Firefox",
-  "permissions": ["proxy", "storage"],
-  "background": {
-    "scripts": ["background.js"]
+  "name": "Proxy Router Manager",
+  "version": "4.0.0",
+  "description": "Универсальный прокси-маршрутизатор, заворачивает определенные домены в выбранные прокси",
+  "permissions": [
+    "proxy",
+    "tabs",
+    "storage",
+    "webRequest",
+    "webRequestBlocking"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "icons": {
+    "32": "icons/icon-32.png",
+    "64": "icons/icon-64.png",
+    "128": "icons/icon-128.png"
   },
-  "homepage_url": "https://github.com/jobgomel/firefox-domain-proxy-router",
-  "author": "Alexander Zakharenko",
+  "background": {
+    "scripts": ["src/background/main.js"],
+    "type": "module"
+  },
   "action": {
-    "default_popup": "popup.html",
-    "default_title": "Настройки прокси"
+    "default_title": "Открыть настройки Proxy Router",
+    "default_icon": {
+      "16": "icons/icon-32.png"
+    }
+  },
+  "options_ui": {
+    "page": "src/options/options.html",
+    "open_in_tab": true
   },
   "browser_specific_settings": {
     "gecko": {
       "id": "firefox-domain-proxy-router@jobgomel",
-      "strict_min_version": "142.0",
-      "data_collection_permissions": {
-        "collects_data": false,
-        "required": [
-          "none"
-        ]
-      }
+      "strict_min_version": "109.0"
     }
   }
 }
