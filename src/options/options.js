@@ -1,4 +1,4 @@
-let appState = { proxies: {}, domains: {}, rules: [] };
+let appState = { proxies: {}, domains: {}, rules: [], exceptions: [] };
 let editingProxyId = null;
 let editingDomainId = null;
 let currentTab = 'proxies'; // Активная вкладка по умолчанию
@@ -7,10 +7,11 @@ const genId = () => '_' + Math.random().toString(36).substr(2, 9);
 
 // Инициализация данных, темы и вкладки
 async function loadData() {
-    const res = await browser.storage.local.get(['proxies', 'domains', 'rules', 'theme', 'activeTab']);
+    const res = await browser.storage.local.get(['proxies', 'domains', 'rules', 'exceptions', 'theme', 'activeTab']);
     appState.proxies = res.proxies || {};
     appState.domains = res.domains || {};
     appState.rules = res.rules || [];
+    appState.exceptions = res.exceptions || []; // <-- Загружаем массив
     currentTab = res.activeTab || 'proxies';
     
     // Инициализация темы
@@ -21,6 +22,9 @@ async function loadData() {
         document.body.classList.remove('dark');
         document.getElementById('theme-toggle').textContent = '🌙 Темная тема';
     }
+
+    // Заполняем поле исключений текстом (каждая маска с новой строки)
+    document.getElementById('ex-domains').value = appState.exceptions.join('\n');
 
     // Инициализация вкладок
     switchTab(currentTab);
@@ -457,3 +461,32 @@ document.getElementById('p-host').addEventListener('input', function(e) {
         });
     }
 });
+
+// Обработчик сохранения списка исключений
+document.getElementById('btn-save-exceptions').onclick = async () => {
+    const rawExceptions = document.getElementById('ex-domains').value.trim();
+    
+    // Превращаем текст в массив чистых строк
+    const parsedExceptions = rawExceptions
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+
+    appState.exceptions = parsedExceptions;
+
+    // Сохраняем в локальное хранилище расширения
+    await browser.storage.local.set({ exceptions: appState.exceptions });
+    
+    // Визуальный фидбек для пользователя (кнопка на секунду позеленеет)
+    const saveBtn = document.getElementById('btn-save-exceptions');
+    const oldBg = saveBtn.style.backgroundColor;
+    const oldText = saveBtn.textContent;
+    
+    saveBtn.style.backgroundColor = '#16a34a';
+    saveBtn.textContent = '✓ Сохранено!';
+    
+    setTimeout(() => {
+        saveBtn.style.backgroundColor = oldBg;
+        saveBtn.textContent = oldText;
+    }, 1200);
+};

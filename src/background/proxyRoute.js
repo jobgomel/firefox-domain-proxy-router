@@ -16,7 +16,13 @@ export function handleProxyRequest(details) {
         };
     }
 
-    // 2. Поиск совпадений по правилам (БЕЗ асинхронных вызовов)
+    // 2. НОВАЯ ПРОВЕРКА: Исключения (Черный список)
+    // Если маска совпадает, пускаем трафик НАПРЯМУЮ, минуя прокси-правила
+    if (Array.isArray(state.exceptions) && state.exceptions.some(mask => matchRule(url, mask))) {
+        return { type: "direct" };
+    }
+
+    // 3. Поиск совпадений по правилам маршрутизации
     for (let rule of state.rules) {
         const domainData = state.domains[rule.domainListId];
         const masks = domainData ? (Array.isArray(domainData.list) ? domainData.list : []) : [];
@@ -40,6 +46,6 @@ export function handleProxyRequest(details) {
         }
     }
 
-    // 3. Прямое соединение, если нет совпадений
+    // 4. Прямое соединение, если нет совпадений
     return { type: "direct" };
 }

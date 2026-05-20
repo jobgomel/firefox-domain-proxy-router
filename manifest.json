@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Proxy Router Manager",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Универсальный прокси-маршрутизатор, заворачивает определенные домены в выбранные прокси",
   "permissions": [
     "proxy",

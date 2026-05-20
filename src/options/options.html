@@ -143,13 +143,21 @@
         <!-- ВКЛАДКА 2: МАРШРУТИЗАЦИЯ И МАСКИ -->
         <div id="tab-content-routing" class="tab-content">
             <div class="forms-column">
+                <section style="border-left: 4px solid #ef4444;">
+                    <h3>🚫 Исключения (Прямое соединение)</h3>
+                    <div class="form-group">
+                        <textarea id="ex-domains" placeholder="Вставьте маски сайтов, которые НЕ ДОЛЖНЫ идти через прокси:&#10;*.gosuslugi.ru&#10;*.local&#10;кинопоиск.ру"></textarea>
+                        <button id="btn-save-exceptions" class="btn-primary" style="background-color: #dc2626;">Сохранить исключения</button>
+                    </div>
+                </section>
+
                 <section>
-                    <h3>📝 Создать / Изменить список масок</h3>
+                    <h3>📝 Создать / Изменить группу доменов (масок)</h3>
                     <div class="form-group">
                         <input type="text" id="d-name" placeholder="Название списка (напр. Соцсети)">
                         <textarea id="d-domains" placeholder="Вставьте маски, каждую с новой строки:&#10;*.example.com&#10;site.com/app/*&#10;*.mywork.org"></textarea>
                         <div class="input-row">
-                            <button id="btn-add-domain" class="btn-primary" style="flex: 2;">Добавить список</button>
+                            <button id="btn-add-domain" class="btn-primary" style="flex: 2;">Добавить группу</button>
                             <button id="cancel-domain-edit">Отмена</button>
                         </div>
                     </div>
