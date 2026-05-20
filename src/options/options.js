@@ -35,7 +35,8 @@ async function saveData() {
     await browser.storage.local.set({
         proxies: appState.proxies,
         domains: appState.domains,
-        rules: appState.rules
+        rules: appState.rules,
+        exceptions: appState.exceptions
     });
     renderAll();
 }
@@ -489,4 +490,106 @@ document.getElementById('btn-save-exceptions').onclick = async () => {
         saveBtn.style.backgroundColor = oldBg;
         saveBtn.textContent = oldText;
     }, 1200);
+};
+
+// Экспорт в JSON
+document.getElementById('btn-export-settings').onclick = () => {
+    // Формируем объект резервной копии на основе текущего appState
+    const backupData = {
+        version: "1.0",
+        proxies: appState.proxies,
+        domains: appState.domains,
+        rules: appState.rules,
+        exceptions: appState.exceptions
+    };
+
+    const jsonString = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Создаем временную ссылку для скачивания файла
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `proxy_router_backup_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Очистка памяти
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+};
+
+// Проксирование клика с красивой кнопки на скрытый input[type="file"]
+const fileInput = document.getElementById('import-file-input');
+const triggerBtn = document.getElementById('btn-trigger-import');
+const importBtn = document.getElementById('btn-import-settings');
+const statusDiv = document.getElementById('import-file-status');
+
+triggerBtn.onclick = () => fileInput.click();
+
+fileInput.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        statusDiv.textContent = `📋 Выбран файл: ${file.name}`;
+        statusDiv.style.color = 'var(--text-main)';
+        importBtn.style.display = 'inline-flex'; // Показываем опасную кнопку подтверждения
+    } else {
+        statusDiv.textContent = 'Файл не выбран';
+        statusDiv.style.color = 'var(--text-muted)';
+        importBtn.style.display = 'none';
+    }
+};
+
+// Чтение файла и импорт данных
+importBtn.onclick = () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    if (!confirm('Вы уверены, что хотите ЗАМЕНИТЬ все текущие настройки данными из файла? Это действие нельзя отменить.')) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const importedData = JSON.parse(event.target.result);
+            
+            // Валидация структуры (проверяем, что это вообще наш файл)
+            if (!importedData || (typeof importedData !== 'object')) {
+                throw new Error('Неверный формат JSON');
+            }
+
+            // Накатываем данные, подстраховываясь дефолтными значениями
+            appState.proxies = importedData.proxies || {};
+            appState.domains = importedData.domains || {};
+            appState.rules = importedData.rules || [];
+            appState.exceptions = importedData.exceptions || [];
+
+            // Сохраняем всё в браузерное хранилище storage.local
+            await browser.storage.local.set({
+                proxies: appState.proxies,
+                domains: appState.domains,
+                rules: appState.rules,
+                exceptions: appState.exceptions
+            });
+
+            // Обновляем текстовое поле исключений на соответствующей вкладке
+            document.getElementById('ex-domains').value = appState.exceptions.join('\n');
+
+            // Перерисовываем интерфейс
+            renderAll();
+
+            // Сбрасываем состояние элементов импорта
+            fileInput.value = '';
+            importBtn.style.display = 'none';
+            statusDiv.textContent = '✅ Настройки успешно импортированы!';
+            statusDiv.style.color = 'var(--text-success)';
+
+            alert('Настройки успешно восстановлены!');
+        } catch (err) {
+            alert('Ошибка при чтении файла: Убедитесь, что это корректный файл конфигурации JSON.');
+            console.error(err);
+        }
+    };
+    reader.readAsText(file);
 };

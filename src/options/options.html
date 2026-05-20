@@ -102,6 +102,7 @@
         <nav class="tabs-nav">
             <button class="tab-btn active" data-tab="proxies">🌐 Управление прокси</button>
             <button class="tab-btn" data-tab="routing">⚡ Маршрутизация по маскам</button>
+            <button class="tab-btn" data-tab="import-export">📥 Экспорт / Импорт</button>
         </nav>
 
         <!-- ВКЛАДКА 1: ПРОКСИ -->
@@ -182,6 +183,42 @@
                 <section>
                     <h3>Списки доменов / путей</h3>
                     <div id="domain-list" class="item-list"></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ВКЛАДКА 3: ЭКСПОРТ / ИМПОРТ -->
+        <div id="tab-content-import-export" class="tab-content">
+            <div class="forms-column">
+                <section style="border-left: 4px solid #4f46e5;">
+                    <h3>📤 Экспорт настроек</h3>
+                    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Скачайте файл со всеми вашими прокси, группами доменов, правилами и исключениями для резервного копирования или переноса.
+                    </p>
+                    <button id="btn-export-settings" class="btn-primary" style="width: 100%;">
+                        💾 Скачать настройки (.json)
+                    </button>
+                </section>
+            </div>
+
+            <div class="lists-column">
+                <section style="border-left: 4px solid #f59e0b;">
+                    <h3>📥 Импорт настроек</h3>
+                    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Выберите ранее сохраненный JSON-файл. <strong style="color: #dc2626;">Внимание!</strong> Текущие настройки будут полностью заменены данными из файла.
+                    </p>
+                    <div class="form-group">
+                        <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                        <button id="btn-trigger-import" style="width: 100%; border-style: dashed; border-width: 2px;">
+                            📂 Выбрать файл JSON
+                        </button>
+                        <div id="import-file-status" style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+                            Файл не выбран
+                        </div>
+                        <button id="btn-import-settings" class="btn-primary" style="background-color: #d97706; width: 100%; display: none;">
+                            🔥 Заменить и восстановить настройки
+                        </button>
+                    </div>
                 </section>
             </div>
         </div>
