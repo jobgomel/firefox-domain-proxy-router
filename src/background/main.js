@@ -1,6 +1,6 @@
 import { initStorageCache, state, setTestProxyConfig } from './state.js';
 import { handleProxyRequest } from './proxyRoute.js';
-import { resetTabHosts } from './ui.js';
+import { resetTabHosts, registerTabUrl } from './ui.js';
 
 // 1. Инициализируем локальный кеш при запуске скрипта
 initStorageCache();
@@ -42,6 +42,10 @@ browser.webRequest.onAuthRequired.addListener(
 browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (changeInfo.status === 'loading') {
         resetTabHosts(tabId);
+        // Если у нас есть URL вкладки (переход на новый сайт), сохраняем его в кеш
+        if (tab && tab.url) {
+            registerTabUrl(tabId, tab.url);
+        }
     }
 });
 
@@ -50,9 +54,10 @@ browser.tabs.onRemoved.addListener((tabId) => {
 });
 
 // 5. Обработка клика по иконке и сообщений тестирования
-browser.action.onClicked.addListener(() => {
-    browser.runtime.openOptionsPage();
-});
+// TODO: Добавлен попап при клике на иконку, в разработке
+//browser.action.onClicked.addListener(() => {
+//    browser.runtime.openOptionsPage();
+//});
 
 browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'testProxy') {

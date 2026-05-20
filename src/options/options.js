@@ -1,4 +1,4 @@
-let appState = { proxies: {}, domains: {}, rules: [] };
+let appState = { proxies: {}, domains: {}, rules: [], exceptions: [] };
 let editingProxyId = null;
 let editingDomainId = null;
 let currentTab = 'proxies'; // Активная вкладка по умолчанию
@@ -7,10 +7,11 @@ const genId = () => '_' + Math.random().toString(36).substr(2, 9);
 
 // Инициализация данных, темы и вкладки
 async function loadData() {
-    const res = await browser.storage.local.get(['proxies', 'domains', 'rules', 'theme', 'activeTab']);
+    const res = await browser.storage.local.get(['proxies', 'domains', 'rules', 'exceptions', 'theme', 'activeTab']);
     appState.proxies = res.proxies || {};
     appState.domains = res.domains || {};
     appState.rules = res.rules || [];
+    appState.exceptions = res.exceptions || []; // <-- Загружаем массив
     currentTab = res.activeTab || 'proxies';
     
     // Инициализация темы
@@ -22,6 +23,9 @@ async function loadData() {
         document.getElementById('theme-toggle').textContent = '🌙 Темная тема';
     }
 
+    // Заполняем поле исключений текстом (каждая маска с новой строки)
+    document.getElementById('ex-domains').value = appState.exceptions.join('\n');
+
     // Инициализация вкладок
     switchTab(currentTab);
     renderAll();
@@ -31,7 +35,8 @@ async function saveData() {
     await browser.storage.local.set({
         proxies: appState.proxies,
         domains: appState.domains,
-        rules: appState.rules
+        rules: appState.rules,
+        exceptions: appState.exceptions
     });
     renderAll();
 }
@@ -203,10 +208,15 @@ function renderDomains() {
 
 function renderRules() {
     const list = document.getElementById('rule-list');
-    list.innerHTML = '';
+    list.innerHTML = ''; // Очистка статического/пустого содержимого через innerHTML разрешена
     
     if (appState.rules.length === 0) {
-        list.innerHTML = '<div style="color:var(--text-muted); font-size:0.875rem;">Нет активных правил трафика</div>';
+        // Безопасное добавление заглушки без innerHTML
+        const emptyDiv = document.createElement('div');
+        emptyDiv.style.color = 'var(--text-muted)';
+        emptyDiv.style.fontSize = '0.875rem';
+        emptyDiv.textContent = 'Нет активных правил трафика';
+        list.appendChild(emptyDiv);
         return;
     }
 
@@ -221,14 +231,33 @@ function renderRules() {
         const info = document.createElement('div');
         info.className = 'card-info';
         
+        // --- БЕЗОПАСНЫЙ СБОР ТИТУЛА ---
         const title = document.createElement('span');
         title.className = 'card-title';
-        title.innerHTML = `Если подходит под маски <span style="color:var(--primary)">[${dName}]</span>`;
         
+        // Добавляем статическую текстовую часть
+        const titleText = document.createTextNode('Если подходит под маски ');
+        title.appendChild(titleText);
+        
+        // Создаем стилизованный span для имени домена
+        const domainSpan = document.createElement('span');
+        domainSpan.style.color = 'var(--primary)';
+        domainSpan.textContent = `[${dName}]`; // textContent экранирует любые спецсимволы и теги
+        title.appendChild(domainSpan);
+        
+        // --- БЕЗОПАСНЫЙ СБОР ПОДЗАГОЛОВКА ---
         const sub = document.createElement('span');
         sub.className = 'card-sub';
-        sub.innerHTML = `Направлять через прокси: <b>${pName}</b>`;
         
+        const subText = document.createTextNode('Направлять через прокси: ');
+        sub.appendChild(subText);
+        
+        // Создаем жирный элемент для имени прокси
+        const proxyBold = document.createElement('b');
+        proxyBold.textContent = pName; // Безопасное присвоение
+        sub.appendChild(proxyBold);
+        
+        // Собираем структуру воедино
         info.appendChild(title);
         info.appendChild(sub);
         
@@ -457,3 +486,134 @@ document.getElementById('p-host').addEventListener('input', function(e) {
         });
     }
 });
+
+// Обработчик сохранения списка исключений
+document.getElementById('btn-save-exceptions').onclick = async () => {
+    const rawExceptions = document.getElementById('ex-domains').value.trim();
+    
+    // Превращаем текст в массив чистых строк
+    const parsedExceptions = rawExceptions
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0);
+
+    appState.exceptions = parsedExceptions;
+
+    // Сохраняем в локальное хранилище расширения
+    await browser.storage.local.set({ exceptions: appState.exceptions });
+    
+    // Визуальный фидбек для пользователя (кнопка на секунду позеленеет)
+    const saveBtn = document.getElementById('btn-save-exceptions');
+    const oldBg = saveBtn.style.backgroundColor;
+    const oldText = saveBtn.textContent;
+    
+    saveBtn.style.backgroundColor = '#16a34a';
+    saveBtn.textContent = '✓ Сохранено!';
+    
+    setTimeout(() => {
+        saveBtn.style.backgroundColor = oldBg;
+        saveBtn.textContent = oldText;
+    }, 1200);
+};
+
+// Экспорт в JSON
+document.getElementById('btn-export-settings').onclick = () => {
+    // Формируем объект резервной копии на основе текущего appState
+    const backupData = {
+        version: "1.0",
+        proxies: appState.proxies,
+        domains: appState.domains,
+        rules: appState.rules,
+        exceptions: appState.exceptions
+    };
+
+    const jsonString = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Создаем временную ссылку для скачивания файла
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `proxy_router_backup_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Очистка памяти
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+};
+
+// Проксирование клика с красивой кнопки на скрытый input[type="file"]
+const fileInput = document.getElementById('import-file-input');
+const triggerBtn = document.getElementById('btn-trigger-import');
+const importBtn = document.getElementById('btn-import-settings');
+const statusDiv = document.getElementById('import-file-status');
+
+triggerBtn.onclick = () => fileInput.click();
+
+fileInput.onchange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        statusDiv.textContent = `📋 Выбран файл: ${file.name}`;
+        statusDiv.style.color = 'var(--text-main)';
+        importBtn.style.display = 'inline-flex'; // Показываем опасную кнопку подтверждения
+    } else {
+        statusDiv.textContent = 'Файл не выбран';
+        statusDiv.style.color = 'var(--text-muted)';
+        importBtn.style.display = 'none';
+    }
+};
+
+// Чтение файла и импорт данных
+importBtn.onclick = () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    if (!confirm('Вы уверены, что хотите ЗАМЕНИТЬ все текущие настройки данными из файла? Это действие нельзя отменить.')) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const importedData = JSON.parse(event.target.result);
+            
+            // Валидация структуры (проверяем, что это вообще наш файл)
+            if (!importedData || (typeof importedData !== 'object')) {
+                throw new Error('Неверный формат JSON');
+            }
+
+            // Накатываем данные, подстраховываясь дефолтными значениями
+            appState.proxies = importedData.proxies || {};
+            appState.domains = importedData.domains || {};
+            appState.rules = importedData.rules || [];
+            appState.exceptions = importedData.exceptions || [];
+
+            // Сохраняем всё в браузерное хранилище storage.local
+            await browser.storage.local.set({
+                proxies: appState.proxies,
+                domains: appState.domains,
+                rules: appState.rules,
+                exceptions: appState.exceptions
+            });
+
+            // Обновляем текстовое поле исключений на соответствующей вкладке
+            document.getElementById('ex-domains').value = appState.exceptions.join('\n');
+
+            // Перерисовываем интерфейс
+            renderAll();
+
+            // Сбрасываем состояние элементов импорта
+            fileInput.value = '';
+            importBtn.style.display = 'none';
+            statusDiv.textContent = '✅ Настройки успешно импортированы!';
+            statusDiv.style.color = 'var(--text-success)';
+
+            alert('Настройки успешно восстановлены!');
+        } catch (err) {
+            alert('Ошибка при чтении файла: Убедитесь, что это корректный файл конфигурации JSON.');
+            console.error(err);
+        }
+    };
+    reader.readAsText(file);
+};

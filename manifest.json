@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Proxy Router Manager",
-  "version": "4.0.0",
+  "version": "4.0.2",
   "description": "Универсальный прокси-маршрутизатор, заворачивает определенные домены в выбранные прокси",
   "permissions": [
     "proxy",
@@ -22,11 +22,12 @@
     "scripts": ["src/background/main.js"],
     "type": "module"
   },
-  "action": {
-    "default_title": "Открыть настройки Proxy Router",
+"action": {
+    "default_title": "Управление Proxy Router",
     "default_icon": {
       "16": "icons/icon-32.png"
-    }
+    },
+    "default_popup": "src/popup/popup.html"
   },
   "options_ui": {
     "page": "src/options/options.html",
@@ -35,7 +36,12 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "firefox-domain-proxy-router@jobgomel",
-      "strict_min_version": "109.0"
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
     }
   }
 }

@@ -1,3 +1,5 @@
+export const tabUrlsCache = new Map(); // Кеш для хранения URL самой вкладки (ключ: tabId, значение: URL-строка)
+
 const actionAPI = browser.action || browser.browserAction;
 
 // Кеш уникальных хостов для бейджей. 
@@ -24,6 +26,7 @@ export function addHostToTab(tabId, hostname) {
 
 export function resetTabHosts(tabId) {
     tabHostsCache.delete(tabId);
+    tabUrlsCache.delete(tabId);
     actionAPI.setBadgeText({ tabId: tabId, text: "" });
     actionAPI.setIcon({ tabId: tabId, path: { "32": "/icons/icon-gray.png" } });
 }
@@ -31,5 +34,11 @@ export function resetTabHosts(tabId) {
 export function setTabIconProxied(tabId) {
     if (tabId !== -1) {
         actionAPI.setIcon({ tabId: tabId, path: { "32": "/icons/icon-green.png" } });
+    }
+}
+
+export function registerTabUrl(tabId, url) {
+    if (tabId && tabId !== -1) {
+        tabUrlsCache.set(tabId, url);
     }
 }
