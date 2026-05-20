@@ -1,0 +1,22 @@
+{
+  "name": "proxy-router",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "gulp",
+    "build:qa": "gulp qa",
+    "build:prod": "gulp prod"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "del": "^8.0.1",
+    "gulp": "^5.0.1",
+    "gulp-clean-css": "^4.3.0",
+    "gulp-htmlmin": "^5.0.1",
+    "gulp-strip-comments": "^2.6.0",
+    "gulp-terser": "^2.1.0",
+    "gulp-zip": "^6.1.0"
+  }
+}
