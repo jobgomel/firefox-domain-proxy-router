@@ -11,6 +11,7 @@ const paths = {
     html: 'src/**/*.html',
     css: 'src/**/*.css',
     js: 'src/**/*.js',
+    locales: '_locales/**/*.js',
     manifest: 'manifest.json',
     license: 'LICENSE*', 
     icons: 'icons/**/*'
@@ -43,6 +44,11 @@ function qaJs() {
         .pipe(gulp.dest('dist/qa/src'));
 }
 
+function qaLocales() {
+    return gulp.src(paths.locales)
+        .pipe(gulp.dest('dist/qa/_locales'));
+}
+
 function qaCopyMeta() {
     // ДОБАВЛЕНО { encoding: false }, так как здесь копируются бинарные иконки (paths.icons)
     return gulp.src([paths.manifest, paths.license, paths.icons], { base: '.', allowEmpty: true, encoding: false })
@@ -71,6 +77,11 @@ function prodJs() {
         .pipe(gulp.dest('dist/prod/src'));
 }
 
+function prodLocales() {
+    return gulp.src(paths.locales)
+        .pipe(gulp.dest('dist/prod/_locales'));
+}
+
 function prodCopyMeta() {
     // ДОБАВЛЕНО { encoding: false } из-за картинок из папки icons
     return gulp.src([paths.manifest, paths.license, paths.icons], { base: '.', allowEmpty: true, encoding: false })
@@ -95,12 +106,12 @@ function qaZip() {
 // ==========================================
 
 const buildQa = gulp.series(
-    gulp.parallel(qaHtml, qaCss, qaJs, qaCopyMeta),
+    gulp.parallel(qaHtml, qaCss, qaJs, qaLocales, qaCopyMeta),
     qaZip
 );
 
 const buildProd = gulp.series(
-    gulp.parallel(prodHtml, prodCss, prodJs, prodCopyMeta),
+    gulp.parallel(prodHtml, prodCss, prodJs, prodLocales, prodCopyMeta),
     prodZip
 );
 
