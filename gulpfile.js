@@ -84,12 +84,19 @@ function prodZip() {
         .pipe(gulp.dest('dist'));
 }
 
+function qaZip() {
+    return gulp.src('dist/qa/**/*')
+        .pipe(zip('qa.zip'))
+        .pipe(gulp.dest('dist'));
+}
+
 // ==========================================
 // СЦЕНАРИИ СБОРКИ
 // ==========================================
 
 const buildQa = gulp.series(
-    gulp.parallel(qaHtml, qaCss, qaJs, qaCopyMeta)
+    gulp.parallel(qaHtml, qaCss, qaJs, qaCopyMeta),
+    qaZip
 );
 
 const buildProd = gulp.series(
