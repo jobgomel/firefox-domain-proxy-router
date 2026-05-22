@@ -11,7 +11,7 @@ const paths = {
     html: 'src/**/*.html',
     css: 'src/**/*.css',
     js: 'src/**/*.js',
-    locales: '_locales/**/*.js',
+    locales: '_locales/**/*.json',
     manifest: 'manifest.json',
     license: 'LICENSE*', 
     icons: 'icons/**/*'
