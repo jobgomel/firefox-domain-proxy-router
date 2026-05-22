@@ -1,7 +1,6 @@
 import { initStorageCache, state, setTestProxyConfig } from './state.js';
 import { handleProxyRequest } from './proxyRoute.js';
-//import { resetTabHosts, registerTabUrl } from './ui.js';
-import { resetTabHosts } from './ui.js';
+import { resetTabHosts, registerTabUrl } from './ui.js';
 
 // 1. Инициализируем локальный кеш при запуске скрипта
 initStorageCache();
@@ -40,13 +39,13 @@ browser.webRequest.onAuthRequired.addListener(
 );
 
 // 4. Очистка UI при навигации или закрытии вкладок
-browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
+browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => { // <-- Добавили tab сюда
     if (changeInfo.status === 'loading') {
         resetTabHosts(tabId);
-        // Если у нас есть URL вкладки (переход на новый сайт), сохраняем его в кеш
-        //if (tab && tab.url) {
-        //    registerTabUrl(tabId, tab.url);
-        //}
+        // Теперь tab определен, и эта проверка сработает отлично
+        if (tab && tab.url) {
+            registerTabUrl(tabId, tab.url);
+        }
     }
 });
 
@@ -65,7 +64,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         setTestProxyConfig(message.proxy);
         const startTime = performance.now();
         
-        fetch('http://example.com/', { method: 'HEAD', cache: 'no-store' })
+        fetch('https://example.com/', { method: 'HEAD', cache: 'no-store' })
             .then(() => {
                 const endTime = performance.now();
                 setTestProxyConfig(null);

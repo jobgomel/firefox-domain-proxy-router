@@ -6,7 +6,7 @@ const actionAPI = browser.action || browser.browserAction;
 // При перезапуске Service Worker (в MV3) он очистится, но для бейджей это не критично.
 const tabHostsCache = new Map();
 
-export function addHostToTab(tabId, hostname) {
+export async function addHostToTab(tabId, hostname) {
     if (tabId === -1) return;
 
     if (!tabHostsCache.has(tabId)) {
@@ -16,24 +16,46 @@ export function addHostToTab(tabId, hostname) {
     const hostsSet = tabHostsCache.get(tabId);
     hostsSet.add(hostname);
     
-    // Обновляем бейдж (не ждем выполнения, делаем асинхронно fire-and-forget)
-    actionAPI.setBadgeText({ 
-        tabId: tabId, 
-        text: hostsSet.size.toString() 
-    });
-    actionAPI.setBadgeBackgroundColor({ tabId: tabId, color: "#4f46e5" });
+    // Оборачиваем работу с вкладкой в try/catch, чтобы защитить от "Invalid tab ID"
+    try {
+        await actionAPI.setBadgeText({ 
+            tabId: tabId, 
+            text: hostsSet.size.toString() 
+        });
+        await actionAPI.setBadgeBackgroundColor({ tabId: tabId, color: "#4f46e5" });
+    } catch (err) {
+        // Игнорируем ошибку, так как вкладка, скорее всего, закрылась или обновилась в процессе
+        console.warn(`[UI Cache] Не удалось обновить бейдж для вкладки ${tabId}: ${err.message}`);
+    }
 }
 
-export function resetTabHosts(tabId) {
+export async function resetTabHosts(tabId) {
     tabHostsCache.delete(tabId);
     tabUrlsCache.delete(tabId);
-    actionAPI.setBadgeText({ tabId: tabId, text: "" });
-    actionAPI.setIcon({ tabId: tabId, path: { "32": "/icons/icon-gray.png" } });
+    
+    // Оборачиваем сброс UI в try/catch по той же причине
+    try {
+        await actionAPI.setBadgeText({ tabId: tabId, text: "" });
+        await actionAPI.setIcon({ 
+            tabId: tabId, 
+            path: { "32": "/icons/icon-gray.png" } 
+        });
+    } catch (err) {
+        // Тихо игнорируем ошибку, если вкладка больше не существует
+    }
 }
 
-export function setTabIconProxied(tabId) {
-    if (tabId !== -1) {
-        actionAPI.setIcon({ tabId: tabId, path: { "32": "/icons/icon-green.png" } });
+// Проверь, есть ли у тебя функция setTabIconProxied ниже в этом же файле.
+// Её тоже стоит обезопасить, если она работает с actionAPI:
+export async function setTabIconProxied(tabId) {
+    if (tabId === -1) return;
+    try {
+        await actionAPI.setIcon({ 
+            tabId: tabId, 
+            path: { "32": "/icons/icon-32.png" } // или твоя цветная иконка
+        });
+    } catch (err) {
+        // Игнорируем
     }
 }
 
