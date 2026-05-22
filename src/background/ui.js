@@ -52,7 +52,7 @@ export async function setTabIconProxied(tabId) {
     try {
         await actionAPI.setIcon({ 
             tabId: tabId, 
-            path: { "32": "/icons/icon-32.png" } // или твоя цветная иконка
+            path: { "32": "/icons/icon-green.png" } // или твоя цветная иконка
         });
     } catch (err) {
         // Игнорируем
