@@ -41,6 +41,18 @@ async function saveData() {
     renderAll();
 }
 
+// --- ЯЫКОВАЯ ЛОКАЛИЗАЦИЯ ---
+document.addEventListener('DOMContentLoaded', async () => {
+    // Находим все элементы с атрибутом data-i18n и переводим их
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        const translation = browser.i18n.getMessage(key);
+        if (translation) {
+            element.textContent = translation;
+        }
+    });
+});
+
 // --- ЛОГИКА ТЕМЫ ---
 document.getElementById('theme-toggle').onclick = async () => {
     const isDark = document.body.classList.toggle('dark');

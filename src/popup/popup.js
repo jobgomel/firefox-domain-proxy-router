@@ -1,4 +1,13 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // Находим все элементы с атрибутом data-i18n и переводим их
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        const translation = browser.i18n.getMessage(key);
+        if (translation) {
+            element.textContent = translation;
+        }
+    });
+
     const uiConfig = await browser.storage.local.get(['theme', 'isEnabled', 'routingMode']);
     if (uiConfig.theme === 'dark') {
         document.body.classList.add('dark');
@@ -38,7 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     function updateStatusText(active) {
-        statusText.textContent = active ? "🟢 Работает" : "🔴 Отключено";
+        statusText.textContent = active 
+                ? browser.i18n.getMessage("statusEnabled") 
+                : browser.i18n.getMessage("statusDisabled");
         statusText.style.color = active ? "#16a34a" : "#dc2626";
     }
 

@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Proxy Router Manager"
+  },
+  "statusEnabled": {
+    "message": "🟢 Active"
+  },
+  "statusDisabled": {
+    "message": "🔴 Disabled"
+  }
+}
