@@ -629,3 +629,199 @@ importBtn.onclick = () => {
     };
     reader.readAsText(file);
 };
+
+// ==========================================
+// ЛОГИКА ПУБЛИЧНЫХ ПРОКСИ (IMPORT)
+// ==========================================
+
+let publicProxiesData = []; // Кэш загруженных данных
+
+const btnOpenPub = document.getElementById('btn-open-public-proxies');
+const modalPub = document.getElementById('public-proxies-modal');
+const btnClosePub = document.getElementById('btn-close-modal');
+const btnRefreshPub = document.getElementById('btn-refresh-pub');
+const filterProto = document.getElementById('pub-filter-protocol');
+const filterGeo = document.getElementById('pub-filter-geo');
+const pubListContainer = document.getElementById('pub-proxy-list');
+const pubLoading = document.getElementById('pub-loading');
+
+// Открытие модального окна
+btnOpenPub.addEventListener('click', () => {
+    modalPub.style.display = 'block';
+    if (publicProxiesData.length === 0) {
+        fetchPublicProxies();
+    }
+});
+
+// Закрытие модального окна
+btnClosePub.addEventListener('click', () => {
+    modalPub.style.display = 'none';
+});
+// Закрытие по клику вне окна
+modalPub.addEventListener('click', (e) => {
+    if (e.target === modalPub) modalPub.style.display = 'none';
+});
+
+btnRefreshPub.addEventListener('click', fetchPublicProxies);
+filterProto.addEventListener('change', renderPublicProxies);
+filterGeo.addEventListener('change', renderPublicProxies);
+
+async function fetchPublicProxies() {
+    pubListContainer.innerHTML = '';
+    pubLoading.style.display = 'block';
+    try {
+        const res = await fetch('https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/all/data.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+        publicProxiesData = data;
+
+        // Извлекаем уникальные протоколы и страны для фильтров
+        const protocols = new Set();
+        const countries = new Set();
+
+        data.forEach(p => {
+            if (p.protocol) protocols.add(p.protocol);
+            if (p.geolocation && p.geolocation.country) countries.add(p.geolocation.country);
+        });
+
+        populateSelect(filterProto, protocols, "Все протоколы");
+        populateSelect(filterGeo, countries, "Все страны");
+
+        renderPublicProxies();
+    } catch (err) {
+        pubListContainer.innerHTML = `<div style="color:#dc2626; padding:1rem;">❌ Ошибка загрузки списка: ${err.message}</div>`;
+    } finally {
+        pubLoading.style.display = 'none';
+    }
+}
+
+// Заполнение выпадающих списков фильтра
+function populateSelect(selectEl, setValues, defaultText) {
+    const currentVal = selectEl.value;
+    selectEl.innerHTML = `<option value="">${defaultText}</option>`;
+
+    // Сортируем по алфавиту для удобства
+    Array.from(setValues).sort().forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        selectEl.appendChild(opt);
+    });
+
+    // Восстанавливаем выбранное значение, если оно все еще актуально
+    if (setValues.has(currentVal)) selectEl.value = currentVal;
+}
+
+// Рендер отфильтрованного списка
+// Рендер отфильтрованного списка (с кнопкой тестирования)
+// Рендер отфильтрованного списка (с кнопкой тестирования)
+function renderPublicProxies() {
+    pubListContainer.innerHTML = '';
+    const protoFilter = filterProto.value;
+    const geoFilter = filterGeo.value;
+
+    // Фильтруем данные
+    const filtered = publicProxiesData.filter(p => {
+        if (protoFilter && p.protocol !== protoFilter) return false;
+        if (geoFilter && (!p.geolocation || p.geolocation.country !== geoFilter)) return false;
+        return true;
+    });
+
+    // Ограничиваем до 100 элементов
+    const limited = filtered.slice(0, 100);
+
+    if (limited.length === 0) {
+        pubListContainer.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:1rem;">Ничего не найдено по заданным фильтрам</div>';
+        return;
+    }
+
+    limited.forEach(p => {
+        const row = document.createElement('div');
+        row.className = 'card-row';
+        row.style.marginBottom = '0.5rem';
+
+        const info = document.createElement('div');
+        info.className = 'card-info';
+
+        // Геолокация
+        const country = p.geolocation?.country || 'Unknown';
+        const city = p.geolocation?.city ? ` (${p.geolocation.city})` : '';
+
+        info.innerHTML = `
+            <span class="card-title">${p.ip}:${p.port} <span class="badge badge-noauth" style="background:#e0e7ff; color:#4338ca;">${p.protocol.toUpperCase()}</span></span>
+            <span class="card-sub">📍 ${country}${city} | Анонимность: ${p.anonymity || '-'}</span>
+        `;
+
+        // Контейнер для статуса и кнопок
+        const controls = document.createElement('div');
+        controls.className = 'controls-wrapper';
+
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'status-text';
+
+        const btnTest = document.createElement('button');
+        btnTest.className = 'btn-test';
+        btnTest.textContent = 'Тест';
+
+        const btnAdd = document.createElement('button');
+        btnAdd.className = 'btn-primary';
+        btnAdd.style.fontSize = '0.75rem';
+        btnAdd.style.padding = '0.35rem 0.75rem';
+        btnAdd.textContent = 'Добавить';
+
+        // Маппинг протоколов заранее (нужен и для теста, и для добавления)
+        let extType = 'http';
+        if (p.protocol.toLowerCase().includes('socks')) extType = 'socks';
+
+        // Формируем объект прокси (как в основном state)
+        const proxyConfig = {
+            name: `Pub ${country} ${p.protocol.toUpperCase()}`,
+            type: extType,
+            host: p.ip,
+            port: p.port.toString(),
+            username: null,
+            password: null
+        };
+
+        // --- ЛОГИКА ТЕСТИРОВАНИЯ ---
+        btnTest.onclick = async () => {
+            statusSpan.textContent = "⌛ Ждем...";
+            statusSpan.style.color = "orange";
+            try {
+                // Отправляем объект напрямую в background скрипт
+                const response = await browser.runtime.sendMessage({ action: 'testProxy', proxy: proxyConfig });
+                if (response && response.success) {
+                    statusSpan.textContent = `✅ OK (${response.duration} ms)`;
+                    statusSpan.style.color = "var(--text-success)";
+                } else {
+                    statusSpan.textContent = "❌ Ошибка";
+                    statusSpan.style.color = "#991b1b";
+                }
+            } catch (e) {
+                statusSpan.textContent = "❌ Сбой";
+                statusSpan.style.color = "#991b1b";
+            }
+        };
+
+        // --- ЛОГИКА ДОБАВЛЕНИЯ ---
+        btnAdd.onclick = () => {
+            const newId = genId();
+            appState.proxies[newId] = proxyConfig;
+            saveData(); // Сохраняем в state расширения
+
+            btnAdd.textContent = '✓ Добавлено';
+            btnAdd.style.backgroundColor = 'var(--text-success)';
+            btnAdd.disabled = true;
+        };
+
+        // Собираем всё вместе
+        controls.appendChild(statusSpan);
+        controls.appendChild(btnTest);
+        controls.appendChild(btnAdd);
+
+        row.appendChild(info);
+        row.appendChild(controls);
+        pubListContainer.appendChild(row);
+    });
+}

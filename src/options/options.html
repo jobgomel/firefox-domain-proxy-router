@@ -132,6 +132,39 @@
                         </div>
                     </div>
                 </section>
+                <section>
+                    <button id="btn-open-public-proxies" class="btn-primary" style="margin-bottom: 1.5rem; width: 100%; background-color: #0ea5e9;">
+                        🌐 Импортировать из публичных прокси
+                    </button>
+
+                    <div id="public-proxies-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); z-index: 50; padding: 2rem; overflow-y: auto; backdrop-filter: blur(4px);">
+                        <div style="background: var(--bg-card); border: 1px solid var(--border); max-width: 700px; margin: 2rem auto; padding: 2rem; border-radius: 1rem; position: relative; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);">
+                            <button id="btn-close-modal" style="position: absolute; top: 1rem; right: 1.5rem; background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+
+                            <h3 style="margin-bottom: 1.5rem; color: var(--text-main);">☁️ Публичные прокси (Free Proxy List)</h3>
+
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                                <select id="pub-filter-protocol" style="flex: 1; min-width: 120px;">
+                                    <option value="">Все протоколы</option>
+                                </select>
+                                <select id="pub-filter-geo" style="flex: 1; min-width: 150px;">
+                                    <option value="">Все страны</option>
+                                </select>
+                                <button id="btn-refresh-pub" class="btn-primary" style="background-color: var(--text-muted);">🔄 Обновить</button>
+                            </div>
+
+                            <div id="pub-loading" style="text-align: center; padding: 2rem; color: var(--text-muted); display: none;">
+                                Загрузка списка (может занять пару секунд)...
+                            </div>
+
+                            <div id="pub-proxy-list" class="item-list" style="max-height: 450px; overflow-y: auto; padding-right: 0.5rem;">
+                            </div>
+                            <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
+                                Отображаются первые 100 результатов, подходящих под фильтр.
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
             <div class="lists-column">
                 <section>
