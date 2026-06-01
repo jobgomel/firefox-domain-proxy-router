@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Proxy Router Manager",
-  "version": "4.0.3",
+  "name": "__MSG_extensionName__", 
+  "default_locale": "en",
+  "version": "4.0.5",
   "description": "Универсальный прокси-маршрутизатор, заворачивает определенные домены в выбранные прокси",
   "permissions": [
     "proxy",
