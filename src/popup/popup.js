@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const toggle = document.getElementById('global-toggle');
     const statusText = document.getElementById('status-label');
+    const statusCard = document.getElementById('status-card');
     const modeSelect = document.getElementById('routing-mode');
     const modeDesc = document.getElementById('mode-desc');
 
@@ -47,10 +48,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     function updateStatusText(active) {
-        statusText.textContent = active 
-                ? browser.i18n.getMessage("statusEnabled") 
+        statusText.textContent = active
+                ? browser.i18n.getMessage("statusEnabled")
                 : browser.i18n.getMessage("statusDisabled");
-        statusText.style.color = active ? "#16a34a" : "#dc2626";
+        statusCard.classList.toggle('active', active);
     }
 
     function updateDescription(mode) {

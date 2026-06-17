@@ -12,6 +12,8 @@ package-lock.json
 # Custom folder icons
 Icon
 
+# AI agents
+.claude
 
 # Volume root files
 .DocumentRevisions-V100
