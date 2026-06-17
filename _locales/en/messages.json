@@ -3,9 +3,9 @@
     "message": "Proxy Router Manager"
   },
   "statusEnabled": {
-    "message": "🟢 Active"
+    "message": "Proxy active"
   },
   "statusDisabled": {
-    "message": "🔴 Disabled"
+    "message": "Proxy disabled"
   }
 }

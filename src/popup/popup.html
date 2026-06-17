@@ -2,9 +2,10 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="../global.css">
     <style>
         body {
-            width: 260px;
+            width: 320px;
             margin: 0;
             padding: 12px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -42,7 +43,7 @@
             margin-bottom: 12px;
             border: 1px solid #e2e8f0;
         }
-        body.dark .switch-container {
+        body.dark .status-container {
             background: #1e293b;
             border-color: #334155;
         }
@@ -119,28 +120,40 @@
             color: #fff; 
             border-color: #475569 !important; 
         }
+        .status-container {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .status-text { font-size: 1.1rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .status-desc { font-size: 0.85rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="title" data-i18n="extensionName">Proxy Router Manager</div>
-    </div>
-
-    <div class="switch-container">
-        <span class="switch-label" id="status-text">Загрузка...</span>
+        <div class="logo">
+            <span style="font-size: 1.5rem;">🔀</span> <span class="title" data-i18n="extensionName">Proxy Router Manager</span>
+        </div>
         <label class="switch">
             <input type="checkbox" id="global-toggle">
             <span class="slider"></span>
         </label>
     </div>
 
-    <div class="switch-container" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-        <span class="switch-label" style="font-size: 0.85rem; color: var(--text-muted);">Режим маршрутизации:</span>
-        <select id="routing-mode" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;  font-size: 0.85rem; cursor: pointer;">
-            <option value="global">🌍 Глобальный (Все запросы)</option>
-            <option value="tab">📌 По контексту вкладки (Изоляция)</option>
-        </select>
-        <div id="mode-desc" style="font-size: 0.75rem; color: #64748b; line-height: 1.2;"></div>
+    <div class="status-container">
+        <div style="font-size: 2.5rem;" id="status-icon">🛡️</div>
+        <div class="status-text" id="status-label">Защита активна</div>
+        <div class="status-desc" id="status-details">Трафик маршрутизируется согласно правилам</div>
+        <div style="flex-direction: column; align-items: flex-start; gap: 8px;">
+            <select id="routing-mode" style="width: 100%; margin: 10px 0; padding: 6px; border-radius: 4px; border: 1px solid #e2e8f0;  font-size: 0.85rem; cursor: pointer;">
+                <option value="global">🌍 Глобальный (Все запросы)</option>
+                <option value="tab">📌 По контексту вкладки (Изоляция)</option>
+            </select>
+            <div id="mode-desc" style="font-size: 0.75rem; color: #64748b; line-height: 1.2;"></div>
+        </div>
     </div>
 
     <button id="open-settings" class="btn-settings">⚙️ Настройки проксирования</button>

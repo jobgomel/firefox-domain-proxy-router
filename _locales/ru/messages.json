@@ -3,9 +3,9 @@
     "message": "Прокси Маршрутизатор"
   },
   "statusEnabled": {
-    "message": "🟢 Работает"
+    "message": "Прокси включен"
   },
   "statusDisabled": {
-    "message": "🔴 Отключено"
+    "message": "Прокси отключен"
   }
 }

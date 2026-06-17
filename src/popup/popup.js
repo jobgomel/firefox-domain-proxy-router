@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const toggle = document.getElementById('global-toggle');
-    const statusText = document.getElementById('status-text');
+    const statusText = document.getElementById('status-label');
     const modeSelect = document.getElementById('routing-mode');
     const modeDesc = document.getElementById('mode-desc');
 
