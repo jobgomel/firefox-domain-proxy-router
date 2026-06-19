@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const iconSvg = opt.querySelector('.select-option-icon svg');
                 const triggerIcon = selectTrigger.querySelector('.select-trigger-icon svg');
                 if (iconSvg && triggerIcon) {
-                    triggerIcon.outerHTML = iconSvg.outerHTML;
+                    triggerIcon.replaceWith(iconSvg.cloneNode(true));
                 }
             }
         });
