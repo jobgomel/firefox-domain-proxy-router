@@ -1,11 +1,11 @@
 {
   "extensionName": {
-    "message": "Прокси Маршрутизатор"
+    "message": "Прокси маршрутизатор"
   },
   "statusEnabled": {
-    "message": "🟢 Работает"
+    "message": "Прокси включен"
   },
   "statusDisabled": {
-    "message": "🔴 Отключено"
+    "message": "Прокси отключен"
   }
 }

@@ -96,7 +96,7 @@ function prodZip() {
 }
 
 function qaZip() {
-    return gulp.src('dist/qa/**/*')
+    return gulp.src('dist/qa/**/*', { encoding: false })
         .pipe(zip('qa.zip'))
         .pipe(gulp.dest('dist'));
 }
