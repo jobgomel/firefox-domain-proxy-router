@@ -17,8 +17,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusIcon = document.getElementById('status-icon');
     const statusText = document.getElementById('status-label');
     const statusCard = document.getElementById('status-card');
-    const modeSelect = document.getElementById('routing-mode');
     const modeDesc = document.getElementById('mode-desc');
+    const selectWrapper = document.getElementById('routing-mode-wrapper');
+    const selectTrigger = document.getElementById('routing-mode-trigger');
+    const selectDropdown = document.getElementById('routing-mode-dropdown');
+    const selectText = document.getElementById('routing-mode-text');
+    const selectOptions = selectDropdown.querySelectorAll('.select-option');
 
     // 1. Настройка главного тумблера
     const isEnabled = uiConfig.isEnabled !== false;
@@ -32,15 +36,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 2. Настройка режима маршрутизации
-    const currentMode = uiConfig.routingMode || 'global';
-    modeSelect.value = currentMode;
+    let currentMode = uiConfig.routingMode || 'global';
+    setMode(currentMode);
     updateDescription(currentMode);
 
-    modeSelect.onchange = async () => {
-        const selectedMode = modeSelect.value;
-        updateDescription(selectedMode);
-        await browser.storage.local.set({ routingMode: selectedMode });
+    // Открытие/закрытие дропдауна
+    selectTrigger.onclick = (e) => {
+        e.stopPropagation();
+        const isOpen = selectWrapper.classList.contains('open');
+        closeDropdown();
+        if (!isOpen) {
+            selectWrapper.classList.add('open');
+            selectTrigger.setAttribute('aria-expanded', 'true');
+        }
     };
+
+    // Выбор опции
+    selectOptions.forEach(option => {
+        option.onclick = () => {
+            const value = option.getAttribute('data-value');
+            if (value !== currentMode) {
+                setMode(value);
+                updateDescription(value);
+                browser.storage.local.set({ routingMode: value });
+            }
+            closeDropdown();
+        };
+    });
+
+    // Закрытие по клику вне
+    document.addEventListener('click', closeDropdown);
+
+    // Закрытие по Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && selectWrapper.classList.contains('open')) {
+            closeDropdown();
+            selectTrigger.focus();
+        }
+    });
+
+    function setMode(value) {
+        currentMode = value;
+        selectOptions.forEach(opt => {
+            const isSelected = opt.getAttribute('data-value') === value;
+            opt.classList.toggle('selected', isSelected);
+            opt.setAttribute('aria-selected', isSelected);
+            if (isSelected) {
+                selectText.textContent = opt.querySelector('span:last-child').textContent;
+                const iconSvg = opt.querySelector('.select-option-icon svg');
+                const triggerIcon = selectTrigger.querySelector('.select-trigger-icon svg');
+                if (iconSvg && triggerIcon) {
+                    triggerIcon.outerHTML = iconSvg.outerHTML;
+                }
+            }
+        });
+    }
+
+    function closeDropdown() {
+        selectWrapper.classList.remove('open');
+        selectTrigger.setAttribute('aria-expanded', 'false');
+    }
 
     // 3. Открытие настроек
     document.getElementById('open-settings').onclick = () => {

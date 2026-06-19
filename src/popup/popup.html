@@ -251,6 +251,50 @@
             position: relative;
         }
 
+        .select-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 11px 34px 11px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-elevated);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: left;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        .select-trigger:hover {
+            border-color: var(--primary);
+        }
+
+        .select-trigger:focus-visible {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .select-trigger-icon {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            color: var(--primary);
+        }
+
+        .select-trigger-text {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .select-wrapper::after {
             content: "";
             position: absolute;
@@ -262,31 +306,65 @@
             border-bottom: 2px solid var(--text-muted);
             pointer-events: none;
             transform: translateY(-75%) rotate(45deg);
+            transition: transform 0.2s ease;
         }
 
-        select {
-            width: 100%;
-            padding: 11px 34px 11px 14px;
+        .select-wrapper.open::after {
+            transform: translateY(-25%) rotate(-135deg);
+        }
+
+        .select-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            z-index: 100;
+            margin: 0;
+            padding: 4px;
+            list-style: none;
+            background-color: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
-            background-color: var(--bg-elevated);
-            color: var(--text-main);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .select-wrapper.open .select-dropdown {
+            display: block;
+        }
+
+        .select-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
             font-size: 0.9rem;
             font-weight: 500;
+            color: var(--text-main);
             cursor: pointer;
-            appearance: none;
-            -moz-appearance: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: background-color 0.15s ease;
         }
 
-        select:hover {
-            border-color: var(--primary);
+        .select-option:hover {
+            background-color: var(--bg-elevated);
         }
 
-        select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        .select-option.selected {
+            background-color: var(--bg-elevated);
+            color: var(--primary);
+        }
+
+        .select-option-icon {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            color: var(--text-muted);
+        }
+
+        .select-option.selected .select-option-icon {
+            color: var(--primary);
         }
 
         .mode-desc {
@@ -396,12 +474,36 @@
         </section>
 
         <section class="control-group">
-            <label for="routing-mode" class="control-label">Режим маршрутизации</label>
-            <div class="select-wrapper">
-                <select id="routing-mode">
-                    <option value="global">🌍 Глобальный (все запросы)</option>
-                    <option value="tab">📌 По контексту вкладки (изоляция)</option>
-                </select>
+            <label for="routing-mode-trigger" class="control-label">Режим маршрутизации</label>
+            <div class="select-wrapper" id="routing-mode-wrapper">
+                <button class="select-trigger" id="routing-mode-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="select-trigger-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M2.5 4a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m2-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m1 .5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                            <path d="M2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm13 2v2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1M2 14a1 1 0 0 1-1-1V6h14v7a1 1 0 0 1-1 1z"/>
+                        </svg>
+                    </span>
+                    <span class="select-trigger-text" id="routing-mode-text">Глобальный (все запросы)</span>
+                </button>
+                <ul class="select-dropdown" id="routing-mode-dropdown" role="listbox" aria-label="Режим маршрутизации">
+                    <li role="option" data-value="global" aria-selected="true" class="select-option selected">
+                        <span class="select-option-icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M2.5 4a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1m2-.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m1 .5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/>
+                                <path d="M2 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm13 2v2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1M2 14a1 1 0 0 1-1-1V6h14v7a1 1 0 0 1-1 1z"/>
+                            </svg>
+                        </span>
+                        <span>Глобальный (все запросы)</span>
+                    </li>
+                    <li role="option" data-value="tab" aria-selected="false" class="select-option">
+                        <span class="select-option-icon" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5zM2.5 3a.5.5 0 0 0-.5.5V6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3zM14 7H2v5.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5z"/>
+                            </svg>
+                        </span>
+                        <span>По контексту вкладки (изоляция)</span>
+                    </li>
+                </ul>
             </div>
             <p class="mode-desc" id="mode-desc"></p>
         </section>
