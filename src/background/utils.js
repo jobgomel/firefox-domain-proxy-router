@@ -1,7 +1,7 @@
 // Кеш для скомпилированных регулярных выражений
 const regexCache = new Map();
 
-function wildcardToRegex(str) {
+export function wildcardToRegex(str) {
     if (regexCache.has(str)) return regexCache.get(str);
     
     const escaped = str.replace(/[.+^${}()|[\]\\]/g, '\\$&');
@@ -9,6 +9,10 @@ function wildcardToRegex(str) {
     
     regexCache.set(str, regex);
     return regex;
+}
+
+export function resetRegexCache() {
+    regexCache.clear();
 }
 
 export function matchRule(urlObj, mask) {

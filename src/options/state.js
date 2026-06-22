@@ -4,11 +4,12 @@
 const STORAGE_KEYS = ['proxies', 'domains', 'rules', 'exceptions', 'theme', 'activeTab'];
 
 export class OptionsState {
-  constructor(renderFn) {
+  constructor(renderFn, storage = browser.storage.local) {
     this._data = { proxies: {}, domains: {}, rules: [], exceptions: [] };
     this._editing = { proxyId: null, domainId: null };
     this._currentTab = 'proxies';
     this._renderFn = typeof renderFn === 'function' ? renderFn : null;
+    this._storage = storage;
   }
 
   // ---- Геттеры данных (только чтение) ----
@@ -33,7 +34,7 @@ export class OptionsState {
 
   async load() {
     try {
-      const res = await browser.storage.local.get(STORAGE_KEYS);
+      const res = await this._storage.get(STORAGE_KEYS);
       this._data.proxies = res.proxies || {};
       this._data.domains = res.domains || {};
       this._data.rules = res.rules || [];
@@ -49,7 +50,7 @@ export class OptionsState {
 
   async save() {
     try {
-      await browser.storage.local.set({ ...this._data });
+      await this._storage.set({ ...this._data });
     } catch (err) {
       console.error('[OptionsState] Ошибка сохранения:', err);
     }

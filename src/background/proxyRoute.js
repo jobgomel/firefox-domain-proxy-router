@@ -1,8 +1,8 @@
-import { state } from './state.js';
 import { matchRule, buildProxyResponse } from './utils.js';
+import { state as defaultState } from './state.js';
 
 // Хелпер, который проверяет, подходит ли конкретный URL под наши правила проксирования
-function isUrlMatchRules(urlObj) {
+function isUrlMatchRules(urlObj, state) {
     for (let rule of state.rules) {
         const domainData = state.domains[rule.domainListId];
         const masks = domainData ? (Array.isArray(domainData.list) ? domainData.list : []) : [];
@@ -15,7 +15,7 @@ function isUrlMatchRules(urlObj) {
     return null;
 }
 
-export function handleProxyRequest(details, { getTabUrl, onProxyMatch } = {}) {
+export function handleProxyRequest(details, { getTabUrl, onProxyMatch } = {}, state = defaultState) {
     // 1. Если расширение выключено глобально — пускаем всё напрямую
     if (!state.isEnabled) {
         return { type: "direct" };
@@ -41,14 +41,14 @@ export function handleProxyRequest(details, { getTabUrl, onProxyMatch } = {}) {
         if (currentTabUrlStr) {
             const currentTabUrl = new URL(currentTabUrlStr);
 
-            const tabProxyConfig = isUrlMatchRules(currentTabUrl);
+            const tabProxyConfig = isUrlMatchRules(currentTabUrl, state);
 
             if (!tabProxyConfig) {
                 return { type: "direct" };
             }
 
             // Вариант А: Подзапрос тоже в белом списке (возможно, под другой прокси)
-            const subrequestProxyConfig = isUrlMatchRules(url);
+            const subrequestProxyConfig = isUrlMatchRules(url, state);
             if (subrequestProxyConfig) {
                 if (details.tabId !== -1 && onProxyMatch) onProxyMatch(details.tabId, url.hostname);
                 return buildProxyResponse(subrequestProxyConfig);
@@ -61,7 +61,7 @@ export function handleProxyRequest(details, { getTabUrl, onProxyMatch } = {}) {
     }
 
     // --- РЕЖИМ ГЛОБАЛЬНЫЙ ---
-    const globalProxyConfig = isUrlMatchRules(url);
+    const globalProxyConfig = isUrlMatchRules(url, state);
     if (globalProxyConfig) {
         if (details.tabId !== -1 && onProxyMatch) onProxyMatch(details.tabId, url.hostname);
         return buildProxyResponse(globalProxyConfig);

@@ -14,7 +14,7 @@ browser.proxy.onRequest.addListener(
             addHostToTab(tabId, hostname);
             setTabIconProxied(tabId);
         }
-    }),
+    }, state),
     { urls: ["<all_urls>"] }
 );
 
