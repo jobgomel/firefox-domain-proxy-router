@@ -5,7 +5,8 @@ import { createCardRow, createCardInfo, createCardTitle, createCardSub, createCo
 
 const state = new OptionsState(renderAll);
 
-const genId = () => '_' + Math.random().toString(36).substr(2, 9);
+//const genId = () => '_' + Math.random().toString(36).substr(2, 9);
+const genId = () => crypto.randomUUID();
 
 // Безопасное декодирование — не падает на некорректной percent-строке
 function safeDecodeURIComponent(str) {
