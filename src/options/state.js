@@ -83,7 +83,7 @@ export class OptionsState {
   deleteProxy(id) {
     delete this._data.proxies[id];
     this._data.rules = this._data.rules.filter(r => r.proxyId !== id);
-    return this.save('proxy');
+    return this.save('all');
   }
 
   addDomain(id, data) {
@@ -99,7 +99,7 @@ export class OptionsState {
   deleteDomain(id) {
     delete this._data.domains[id];
     this._data.rules = this._data.rules.filter(r => r.domainListId !== id);
-    return this.save('domain');
+    return this.save('all');
   }
 
   addRule(rule) {
