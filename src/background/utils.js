@@ -23,3 +23,13 @@ export function matchRule(urlObj, mask) {
         return wildcardToRegex(mask).test(urlObj.hostname);
     }
 }
+
+export function buildProxyResponse(proxyConfig) {
+    return {
+        type: proxyConfig.type,
+        host: proxyConfig.host,
+        port: parseInt(proxyConfig.port),
+        username: proxyConfig.username || undefined,
+        password: proxyConfig.password || undefined
+    };
+}

@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { matchRule } from './utils.js';
+import { matchRule, buildProxyResponse } from './utils.js';
 import { addHostToTab, setTabIconProxied, tabUrlsCache } from './ui.js';
 
 // Хелпер, который проверяет, подходит ли конкретный URL под наши правила проксирования
@@ -26,13 +26,7 @@ export function handleProxyRequest(details) {
     
     // 2. Проверка теста прокси
     if (state.testProxyConfig && url.hostname === 'example.com') {
-        return {
-            type: state.testProxyConfig.type,
-            host: state.testProxyConfig.host,
-            port: parseInt(state.testProxyConfig.port),
-            username: state.testProxyConfig.username || undefined,
-            password: state.testProxyConfig.password || undefined
-        };
+        return buildProxyResponse(state.testProxyConfig);
     }
 
     // 3. Проверка черного списка (Исключений)
@@ -63,19 +57,13 @@ export function handleProxyRequest(details) {
             const subrequestProxyConfig = isUrlMatchRules(url);
             if (subrequestProxyConfig) {
                 if (details.tabId !== -1) { addHostToTab(details.tabId, url.hostname); setTabIconProxied(details.tabId); }
-                return {
-                    type: subrequestProxyConfig.type, host: subrequestProxyConfig.host, port: parseInt(subrequestProxyConfig.port),
-                    username: subrequestProxyConfig.username || undefined, password: subrequestProxyConfig.password || undefined
-                };
+                return buildProxyResponse(subrequestProxyConfig);
             }
             
             // Вариант Б: Подзапрос обычный, но мы находимся на прокси-вкладке. 
             // Заворачиваем подзапрос в прокси этой вкладки, чтобы страница не ломалась из-за смешанного трафика.
             if (details.tabId !== -1) { addHostToTab(details.tabId, url.hostname); setTabIconProxied(details.tabId); }
-            return {
-                type: tabProxyConfig.type, host: tabProxyConfig.host, port: parseInt(tabProxyConfig.port),
-                username: tabProxyConfig.username || undefined, password: tabProxyConfig.password || undefined
-            };
+            return buildProxyResponse(tabProxyConfig);
         }
     }
 
@@ -86,13 +74,7 @@ export function handleProxyRequest(details) {
             addHostToTab(details.tabId, url.hostname);
             setTabIconProxied(details.tabId);
         }
-        return {
-            type: globalProxyConfig.type,
-            host: globalProxyConfig.host,
-            port: parseInt(globalProxyConfig.port),
-            username: globalProxyConfig.username || undefined,
-            password: globalProxyConfig.password || undefined
-        };
+        return buildProxyResponse(globalProxyConfig);
     }
 
     return { type: "direct" };

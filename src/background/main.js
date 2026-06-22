@@ -1,6 +1,7 @@
 import { initStorageCache, state, setTestProxyConfig } from './state.js';
 import { handleProxyRequest } from './proxyRoute.js';
 import { resetTabHosts, registerTabUrl } from './ui.js';
+import { registerProxyAuthHandler } from './auth.js';
 
 // 1. Инициализируем локальный кеш при запуске скрипта
 initStorageCache();
@@ -12,31 +13,7 @@ browser.proxy.onRequest.addListener(
 );
 
 // 3. Обработка авторизации прокси
-browser.webRequest.onAuthRequired.addListener(
-    function(details) {
-        if (!details.isProxy) return {};
-        const proxyHost = details.challenger.host;
-        const proxyPort = details.challenger.port;
-        
-        // Авторизация для тестового прокси
-        if (state.testProxyConfig && state.testProxyConfig.host === proxyHost && parseInt(state.testProxyConfig.port) === proxyPort) {
-            return { authCredentials: { username: state.testProxyConfig.username, password: state.testProxyConfig.password } };
-        }
-
-        // Авторизация для рабочих прокси (ищем по хосту и порту)
-        for (let key in state.proxies) {
-            const authProxy = state.proxies[key];
-            if (authProxy.host === proxyHost && parseInt(authProxy.port) === proxyPort) {
-                if (authProxy.username && authProxy.password) {
-                    return { authCredentials: { username: authProxy.username, password: authProxy.password } };
-                }
-            }
-        }
-        return { cancel: true };
-    },
-    { urls: ["<all_urls>"] },
-    ["blocking"]
-);
+registerProxyAuthHandler();
 
 // 4. Очистка UI при навигации или закрытии вкладок
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => { // <-- Добавили tab сюда

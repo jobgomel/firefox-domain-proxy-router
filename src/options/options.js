@@ -1,4 +1,6 @@
 import { OptionsState } from './state.js';
+import { testProxy } from '../shared/testProxy.js';
+import { applyI18n } from '../shared/i18n.js';
 
 const state = new OptionsState(renderAll);
 
@@ -51,14 +53,7 @@ async function loadData() {
 
 // --- ЯЫКОВАЯ ЛОКАЛИЗАЦИЯ ---
 document.addEventListener('DOMContentLoaded', async () => {
-	// Находим все элементы с атрибутом data-i18n и переводим их
-	document.querySelectorAll('[data-i18n]').forEach(element => {
-		const key = element.getAttribute('data-i18n');
-		const translation = browser.i18n.getMessage(key);
-		if (translation) {
-			element.textContent = translation;
-		}
-	});
+	applyI18n();
 });
 
 // --- ЛОГИКА ТЕМЫ ---
@@ -139,7 +134,7 @@ function renderProxies() {
 		const testBtn = document.createElement('button');
 		testBtn.className = 'btn-test';
 		testBtn.textContent = 'Тест';
-		testBtn.addEventListener('click', () => testProxy(id));
+		testBtn.addEventListener('click', () => testProxyById(id));
 
 		const editBtn = document.createElement('button');
 		editBtn.className = 'btn-edit';
@@ -433,24 +428,12 @@ function deleteRule(index) {
 	state.deleteRule(index);
 }
 
-async function testProxy(id) {
+function testProxyById(id) {
 	const proxy = state.proxies[id];
+	if (!proxy) return;
 	const statusEl = document.getElementById(`status-${id}`);
-	statusEl.textContent = "⌛ Ждем...";
-	statusEl.style.color = "orange";
-	try {
-		const response = await browser.runtime.sendMessage({ action: 'testProxy', proxy });
-		if (response && response.success) {
-			statusEl.textContent = `✅ OK (${response.duration} ms)`;
-			statusEl.style.color = "var(--text-success)";
-		} else {
-			statusEl.textContent = "❌ Ошибка";
-			statusEl.style.color = "#991b1b";
-		}
-	} catch (e) {
-		statusEl.textContent = "❌ Сбой";
-		statusEl.style.color = "#991b1b";
-	}
+	if (!statusEl) return;
+	testProxy(proxy, statusEl);
 }
 
 loadData();
@@ -771,23 +754,8 @@ function renderPublicProxies() {
 		};
 
 		// --- ЛОГИКА ТЕСТИРОВАНИЯ ---
-		btnTest.onclick = async () => {
-			statusSpan.textContent = "⌛ Ждем...";
-			statusSpan.style.color = "orange";
-			try {
-				// Отправляем объект напрямую в background скрипт
-				const response = await browser.runtime.sendMessage({ action: 'testProxy', proxy: proxyConfig });
-				if (response && response.success) {
-					statusSpan.textContent = `✅ OK (${response.duration} ms)`;
-					statusSpan.style.color = "var(--text-success)";
-				} else {
-					statusSpan.textContent = "❌ Ошибка";
-					statusSpan.style.color = "#991b1b";
-				}
-			} catch (e) {
-				statusSpan.textContent = "❌ Сбой";
-				statusSpan.style.color = "#991b1b";
-			}
+		btnTest.onclick = () => {
+			testProxy(proxyConfig, statusSpan);
 		};
 
 		// --- ЛОГИКА ДОБАВЛЕНИЯ ---

@@ -1,12 +1,7 @@
+import { applyI18n } from '../shared/i18n.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // Находим все элементы с атрибутом data-i18n и переводим их
-    document.querySelectorAll('[data-i18n]').forEach(element => {
-        const key = element.getAttribute('data-i18n');
-        const translation = browser.i18n.getMessage(key);
-        if (translation) {
-            element.textContent = translation;
-        }
-    });
+    applyI18n();
 
     const uiConfig = await browser.storage.local.get(['theme', 'isEnabled', 'routingMode']);
     if (uiConfig.theme === 'dark') {
