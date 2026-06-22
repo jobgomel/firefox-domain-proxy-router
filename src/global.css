@@ -20,11 +20,19 @@
     --success: #10b981;
     --danger: #ef4444;
 
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --bg-elevated: #f1f5f9;
 
     --radius-md: 8px;
     --radius-lg: 12px;
+    --radius-xl: 20px;
+
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+
+    --text-success: #166534;
+    --bg-success: #f0fdf4;
+    --border-success: #bbf7d0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,6 +40,7 @@
         --bg-body: #0f172a;
         --bg-card: #1e293b;
         --bg-input: #0f172a;
+        --bg-elevated: #334155;
 
         --text-main: #f8fafc;
         --text-muted: #94a3b8;
@@ -41,7 +50,32 @@
 
         --primary: #818cf8;
         --primary-hover: #6366f1;
+
+        --text-success: #4ade80;
+        --bg-success: #052e16;
+        --border-success: #15803d;
     }
+}
+
+/* Принудительная тёмная тема (класс на body — для ручного переключения) */
+body.dark {
+    --bg-body: #0f172a;
+    --bg-card: #1e293b;
+    --bg-input: #0f172a;
+    --bg-elevated: #334155;
+
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+
+    --border: #334155;
+    --border-focus: #818cf8;
+
+    --primary: #818cf8;
+    --primary-hover: #6366f1;
+
+    --text-success: #4ade80;
+    --bg-success: #052e16;
+    --border-success: #15803d;
 }
 
 /* Базовые стили */

@@ -3,37 +3,9 @@
 <head>
     <meta charset="utf-8">
     <title>Панель управления Proxy Router</title>
+    <link rel="stylesheet" href="../global.css">
     <style>
-        /* Имитация дизайн-системы Tailwind CSS */
-        body {
-            --bg-main: #f8fafc; /* slate-50 */
-            --bg-card: #ffffff;
-            --bg-row: #f8fafc;
-            --bg-input: #ffffff;
-            --text-main: #0f172a; /* slate-900 */
-            --text-muted: #64748b; /* slate-500 */
-            --primary: #4f46e5; /* indigo-600 */
-            --primary-hover: #4338ca; /* indigo-700 */
-            --border: #e2e8f0; /* slate-200 */
-            --text-success: #166534;
-            --bg-success: #f0fdf4;
-            --border-success: #bbf7d0;
-        }
-
-        body.dark {
-            --bg-main: #0f172a; /* slate-900 */
-            --bg-card: #1e293b; /* slate-800 */
-            --bg-row: #0f172a;
-            --bg-input: #334155; /* slate-700 */
-            --text-main: #f8fafc; /* slate-50 */
-            --text-muted: #94a3b8; /* slate-400 */
-            --border: #334155;
-            --text-success: #4ade80; /* green-400 */
-            --bg-success: #052e16;
-            --border-success: #15803d;
-        }
-
-        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 2rem; transition: background-color 0.2s ease, color 0.2s ease; }
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 2rem; transition: background-color 0.2s ease, color 0.2s ease; }
         .container { max-width: 1200px; margin: 0 auto; }
 
         /* Шапка */
@@ -45,7 +17,7 @@
         .tabs-nav { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 2rem; }
         .tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.15s ease; }
         .tab-btn svg { margin-right: 0.5rem; }
-        .tab-btn:hover { color: var(--text-main); background-color: var(--bg-row); }
+        .tab-btn:hover { color: var(--text-main); background-color: var(--bg-elevated); }
         .tab-btn.active { color: var(--primary); background-color: rgba(79, 70, 229, 0.1); }
         body.dark .tab-btn.active { color: #818cf8; background-color: rgba(129, 140, 248, 0.15); }
 
@@ -82,7 +54,7 @@
 
         /* Динамические списки */
         .item-list { display: flex; flex-direction: column; gap: 0.75rem; }
-        .card-row { background: var(--bg-row); border: 1px solid var(--border); padding: 1rem; border-radius: 0.625rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+        .card-row { background: var(--bg-elevated); border: 1px solid var(--border); padding: 1rem; border-radius: 0.625rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
         .card-info { display: flex; flex-direction: column; gap: 0.25rem; max-width: 65%; }
         .card-title { font-weight: 600; font-size: 0.95rem; color: var(--text-main); }
         .card-sub { font-size: 0.8rem; color: var(--text-muted); font-family: monospace; word-break: break-all; }
