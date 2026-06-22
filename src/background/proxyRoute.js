@@ -35,7 +35,14 @@ export function handleProxyRequest(details, { getTabUrl, onProxyMatch } = {}, st
 
     // --- ФИЛЬТРАЦИЯ ПО РЕЖИМУ РАБОТЫ ---
 
-    if (state.routingMode === 'tab' && details.tabId !== -1) {
+    if (state.routingMode === 'tab') {
+        // Фоновые/системные запросы без контекста вкладки (tabId === -1) — всегда direct.
+        // В tab-mode мы не можем определить, к какой вкладке относится запрос,
+        // поэтому проксировать его по глобальным правилам было бы неочевидно.
+        if (details.tabId === -1) {
+            return { type: "direct" };
+        }
+
         const currentTabUrlStr = getTabUrl ? getTabUrl(details.tabId) : null;
 
         if (currentTabUrlStr) {
