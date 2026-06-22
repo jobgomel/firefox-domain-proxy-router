@@ -11,9 +11,9 @@ export function wildcardToRegex(str) {
     return regex;
 }
 
-export function resetRegexCache() {
-    regexCache.clear();
-}
+//export function resetRegexCache() {
+//    regexCache.clear();
+//}
 
 export function matchRule(urlObj, mask) {
     mask = mask.trim();
