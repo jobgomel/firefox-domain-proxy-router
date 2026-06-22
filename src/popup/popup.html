@@ -5,21 +5,16 @@
     <link rel="stylesheet" href="../global.css">
     <style>
         /* ==========================================
-           POPUP — специфичные стили
+           POPUP — специфичные стили (340px)
            ========================================== */
         body {
             width: 340px;
             margin: 0;
-            padding: 18px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
+            padding: 16px;
+            font-family: var(--font-sans);
+            background-color: var(--canvas);
+            color: var(--ink);
             line-height: 1.5;
-            box-sizing: border-box;
-        }
-
-        * {
-            box-sizing: border-box;
         }
 
         /* ==========================================
@@ -29,139 +24,114 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 18px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            background: linear-gradient(135deg, var(--primary) 0%, #a855f7 100%);
-            border-radius: var(--radius-lg);
-            color: white;
-            box-shadow: var(--shadow-md);
+            margin-bottom: 16px;
         }
 
         .brand-text {
             display: flex;
             flex-direction: column;
+            gap: 1px;
         }
 
         .title {
-            font-size: 1rem;
+            font-size: 15px;
             font-weight: 700;
-            letter-spacing: -0.01em;
-            line-height: 1.25;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            color: var(--ink);
         }
 
         .subtitle {
-            font-size: 0.75rem;
-            color: var(--text-muted);
+            font-size: 11px;
             font-weight: 500;
+            color: var(--muted);
+            letter-spacing: 0.01em;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         /* ==========================================
-           TOGGLE SWITCH
+           SETTINGS BUTTON (icon only)
            ========================================== */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 38px;
-            height: 22px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
+        .btn-settings {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            inset: 0;
-            background-color: var(--border);
-            transition: 0.25s ease;
-            border-radius: 34px;
-            box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.1);
+            transition: all 0.15s ease;
         }
 
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
-            border-radius: 50%;
-            box-shadow: var(--shadow-sm);
+        .btn-settings:hover {
+            color: var(--ink);
+            background-color: var(--elevated);
         }
 
-        input:checked + .slider {
-            background: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
+        .btn-settings:active {
+            transform: scale(0.92);
         }
 
-        input:checked + .slider:before {
-            transform: translateX(16px);
-        }
-
-        input:focus-visible + .slider {
-            outline: 2px solid var(--primary);
-            outline-offset: 2px;
+        .btn-settings .btn-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
         }
 
         /* ==========================================
            STATUS CARD
            ========================================== */
         .status-card {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
+            background-color: var(--canvas);
+            border: 1px solid var(--hairline);
             border-radius: var(--radius-lg);
-            padding: 22px;
-            margin-bottom: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
             text-align: center;
-            box-shadow: var(--shadow-lg);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .status-card.active {
+            border-color: var(--success);
         }
 
         .status-icon-wrap {
-            width: 72px;
-            height: 72px;
-            margin: 0 auto 14px;
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 12px;
             background-image: url("../../icons/icon-default.png");
             background-size: contain;
             background-position: center;
             background-repeat: no-repeat;
-            background-color: transparent;
-            border-radius: 50%;
-            transition: background-image 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+            transition: background-image 0.2s ease, opacity 0.2s ease;
+            opacity: 0.45;
+        }
+
+        .status-card.active .status-icon-wrap {
+            opacity: 1;
         }
 
         .status-icon-wrap.disable {
             background-image: url("../../icons/icon-disable.png");
         }
 
-        .status-card.active .status-icon-wrap {
-            border-color: rgba(16, 185, 129, 0.35);
-            transform: scale(1.075);
-        }
-
         .status-text {
-            font-size: 1.15rem;
+            font-size: 16px;
             font-weight: 700;
-            margin: 0 0 6px;
+            margin: 0 0 4px;
             letter-spacing: -0.01em;
+            color: var(--ink);
         }
 
         .status-card.active .status-text {
@@ -173,34 +143,34 @@
         }
 
         .status-desc {
-            font-size: 0.85rem;
-            color: var(--text-muted);
+            font-size: 12px;
+            color: var(--body);
             margin: 0;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         /* ==========================================
-           ROUTING MODE
+           ROUTING MODE SELECTOR
            ========================================== */
         .control-group {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
+            background-color: var(--canvas);
+            border: 1px solid var(--hairline);
             border-radius: var(--radius-lg);
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow-sm);
+            padding: 14px 16px;
+            margin-bottom: 0;
         }
 
         .control-label {
             display: block;
-            font-size: 0.8rem;
+            font-size: 11px;
             font-weight: 600;
-            color: var(--text-muted);
+            color: var(--muted);
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.06em;
             margin-bottom: 10px;
         }
 
+        /* Custom select */
         .select-wrapper {
             position: relative;
         }
@@ -208,37 +178,37 @@
         .select-trigger {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            padding: 11px 34px 11px 14px;
-            border: 1px solid var(--border);
+            padding: 9px 32px 9px 12px;
+            border: 1px solid var(--hairline);
             border-radius: var(--radius-md);
-            background-color: var(--bg-elevated);
-            color: var(--text-main);
-            font-size: 0.9rem;
+            background-color: var(--elevated);
+            color: var(--ink);
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             text-align: left;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
             font-family: inherit;
             line-height: 1.5;
         }
 
         .select-trigger:hover {
-            border-color: var(--primary);
+            border-color: var(--ink);
         }
 
         .select-trigger:focus-visible {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            border-color: var(--hairline-focus);
+            box-shadow: 0 0 0 3px rgba(13, 116, 206, 0.12);
         }
 
         .select-trigger-icon {
             display: flex;
             align-items: center;
             flex-shrink: 0;
-            color: var(--primary);
+            color: var(--body);
         }
 
         .select-trigger-text {
@@ -249,22 +219,23 @@
             white-space: nowrap;
         }
 
+        /* Dropdown chevron */
         .select-wrapper::after {
             content: "";
             position: absolute;
-            right: 14px;
+            right: 12px;
             top: 50%;
-            width: 8px;
-            height: 8px;
-            border-right: 2px solid var(--text-muted);
-            border-bottom: 2px solid var(--text-muted);
+            width: 7px;
+            height: 7px;
+            border-right: 1.5px solid var(--muted);
+            border-bottom: 1.5px solid var(--muted);
             pointer-events: none;
-            transform: translateY(-75%) rotate(45deg);
+            transform: translateY(-70%) rotate(45deg);
             transition: transform 0.2s ease;
         }
 
         .select-wrapper.open::after {
-            transform: translateY(-25%) rotate(-135deg);
+            transform: translateY(-20%) rotate(-135deg);
         }
 
         .select-dropdown {
@@ -277,10 +248,10 @@
             margin: 0;
             padding: 4px;
             list-style: none;
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
+            background-color: var(--canvas);
+            border: 1px solid var(--hairline);
             border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-md);
             overflow: hidden;
         }
 
@@ -291,86 +262,45 @@
         .select-option {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
             font-weight: 500;
-            color: var(--text-main);
+            color: var(--ink);
             cursor: pointer;
-            transition: background-color 0.15s ease;
+            transition: background-color 0.1s ease;
         }
 
         .select-option:hover {
-            background-color: var(--bg-elevated);
+            background-color: var(--elevated);
         }
 
         .select-option.selected {
-            background-color: var(--bg-elevated);
-            color: var(--primary);
+            background-color: var(--elevated);
+            font-weight: 600;
         }
 
         .select-option-icon {
             display: flex;
             align-items: center;
             flex-shrink: 0;
-            color: var(--text-muted);
+            color: var(--muted);
         }
 
         .select-option.selected .select-option-icon {
-            color: var(--primary);
+            color: var(--ink);
         }
 
         .mode-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.4;
+            font-size: 12px;
+            color: var(--body);
+            line-height: 1.5;
             margin-top: 10px;
         }
 
         /* ==========================================
-           SETTINGS BUTTON
-           ========================================== */
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-settings {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-settings:hover {
-            color: var(--text-main);
-            background-color: var(--bg-elevated);
-        }
-
-        .btn-settings:active {
-            transform: scale(0.92);
-        }
-
-        .btn-settings .btn-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-        }
-
-        /* ==========================================
-           MICRO UTILITY
+           UTILITY
            ========================================== */
         .sr-only {
             position: absolute;
@@ -387,25 +317,23 @@
 </head>
 <body>
     <header class="header">
-        <div class="brand">
-            <div class="brand-text">
-                <span class="title" data-i18n="extensionName">Proxy router</span>
-                <span class="subtitle">Быстрый доступ к прокси</span>
-            </div>
+        <div class="brand-text">
+            <span class="title" data-i18n="extensionName">Proxy router</span>
+            <span class="subtitle">Firefox Extension</span>
         </div>
         <div class="header-actions">
-        <button id="open-settings" class="btn-settings" title="Настройки проксирования">
-            <span class="btn-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
-                  <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
-                </svg>
-            </span>
-        </button>
-        <label class="switch" title="Включить / выключить">
-            <input type="checkbox" id="global-toggle">
-            <span class="slider"></span>
-            <span class="sr-only">Глобальный переключатель</span>
-        </label>
+            <button id="open-settings" class="btn-settings" title="Настройки проксирования">
+                <span class="btn-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+                    </svg>
+                </span>
+            </button>
+            <label class="switch" title="Включить / выключить">
+                <input type="checkbox" id="global-toggle">
+                <span class="slider"></span>
+                <span class="sr-only">Глобальный переключатель</span>
+            </label>
         </div>
     </header>
 

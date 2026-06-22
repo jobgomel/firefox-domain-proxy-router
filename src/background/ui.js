@@ -22,7 +22,7 @@ export async function addHostToTab(tabId, hostname) {
             tabId: tabId, 
             text: hostsSet.size.toString() 
         });
-        await actionAPI.setBadgeBackgroundColor({ tabId: tabId, color: "#4f46e5" });
+        await actionAPI.setBadgeBackgroundColor({ tabId: tabId, color: "#171717" });
     } catch (err) {
         // Игнорируем ошибку, так как вкладка, скорее всего, закрылась или обновилась в процессе
         console.warn(`[UI Cache] Не удалось обновить бейдж для вкладки ${tabId}: ${err.message}`);

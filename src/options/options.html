@@ -5,78 +5,349 @@
     <title>Панель управления Proxy Router</title>
     <link rel="stylesheet" href="../global.css">
     <style>
-        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 2rem; transition: background-color 0.2s ease, color 0.2s ease; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        /* ==========================================
+           OPTIONS PAGE — полностраничная панель
+           ========================================== */
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--canvas);
+            color: var(--ink);
+            margin: 0;
+            padding: 32px 32px 64px;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
 
-        /* Шапка */
-        header { margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
-        h1 { font-size: 1.75rem; font-weight: 700; margin: 0; letter-spacing: -0.025em; }
-        .btn-theme { margin-left: auto; font-size: 0.875rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.4rem; }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
 
-        /* ВКЛАДКИ (Tabs) */
-        .tabs-nav { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 2rem; }
-        .tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 1rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.15s ease; }
-        .tab-btn svg { margin-right: 0.5rem; }
-        .tab-btn:hover { color: var(--text-main); background-color: var(--bg-elevated); }
-        .tab-btn.active { color: var(--primary); background-color: rgba(79, 70, 229, 0.1); }
-        body.dark .tab-btn.active { color: #818cf8; background-color: rgba(129, 140, 248, 0.15); }
+        /* ==========================================
+           HEADER
+           ========================================== */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
 
-        /* Контент вкладок (по умолчанию скрыт) */
-        .tab-content { display: none; }
-        .tab-content.active { display: grid; grid-template-columns: 1fr 1.25fr; gap: 2rem; }
-        @media (max-width: 768px) { .tab-content.active { grid-template-columns: 1fr; } }
+        .page-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
 
-        /* Карточки */
-        section { background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 0.75rem; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); }
-        h3 { font-size: 1.1rem; font-weight: 600; margin-top: 0; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .page-header-left img {
+            height: 40px;
+            width: 40px;
+        }
 
-        /* Формы */
-        .form-group { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
-        .input-row { display: flex; gap: 0.5rem; }
-        input, select, textarea { flex: 1; padding: 0.625rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.875rem; background-color: var(--bg-input); color: var(--text-main); outline: none; transition: border-color 0.15s ease; font-family: inherit; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-        textarea { resize: vertical; min-height: 120px; line-height: 1.4; }
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+        }
 
-        /* Кнопки */
-        button { font-weight: 500; font-size: 0.875rem; padding: 0.625rem 1rem; border-radius: 0.5rem; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s ease; display: inline-flex; align-items: center; justify-content: center; gap: 4px; background-color: var(--bg-input); color: var(--text-main); }
-        button:hover { opacity: 0.9; }
-        .btn-primary { background-color: var(--primary); color: white; border: none; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
-        .btn-full {width: 100%;}
-        .btn-full svg {margin-right: 0.25rem;}
+        .page-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-        .btn-test { background-color: var(--bg-success); color: var(--text-success); border-color: var(--border-success); font-size: 0.75rem; padding: 0.35rem 0.75rem; }
-        .btn-edit { background-color: #fff9db; color: #92400e; border-color: #fde68a; font-size: 0.75rem; padding: 0.35rem 0.75rem; }
-        body.dark .btn-edit { background-color: #78350f; color: #fef3c7; border-color: #92400e; }
-        .btn-del { background-color: #fef2f2; color: #991b1b; border-color: #fecaca; font-size: 0.75rem; padding: 0.35rem 0.75rem; }
-        body.dark .btn-del { background-color: #4c0519; color: #fee2e2; border-color: #991b1b; }
-        #cancel-edit, #cancel-domain-edit { display: none; background-color: var(--border); }
+        /* Theme toggle — pill shape (badge-style, per design prompt) */
+        .btn-theme {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--elevated);
+            color: var(--ink);
+            border: 1px solid var(--hairline);
+            transition: all 0.15s ease;
+        }
+        .btn-theme:hover {
+            background-color: #eaeaee;
+            border-color: var(--muted);
+        }
+        body.dark .btn-theme:hover {
+            background-color: #32323a;
+        }
 
-        /* Динамические списки */
-        .item-list { display: flex; flex-direction: column; gap: 0.75rem; }
-        .card-row { background: var(--bg-elevated); border: 1px solid var(--border); padding: 1rem; border-radius: 0.625rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-        .card-info { display: flex; flex-direction: column; gap: 0.25rem; max-width: 65%; }
-        .card-title { font-weight: 600; font-size: 0.95rem; color: var(--text-main); }
-        .card-sub { font-size: 0.8rem; color: var(--text-muted); font-family: monospace; word-break: break-all; }
-        .badge { display: inline-block; padding: 0.125rem 0.5rem; font-size: 0.75rem; font-weight: 600; border-radius: 0.25rem; margin-left: 0.5rem; white-space: nowrap; }
-        .badge-auth { background: #e0f2fe; color: #0369a1; }
-        .badge-noauth { background: var(--border); color: var(--text-muted); }
-        .controls-wrapper { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; }
-        .status-text { font-size: 0.8rem; font-weight: 600; }
+        /* ==========================================
+           TAB NAVIGATION
+           ========================================== */
+        .tabs-nav {
+            display: flex;
+            gap: 0;
+            border-bottom: 1px solid var(--hairline);
+            margin-bottom: 28px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--body);
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px 18px;
+            margin-bottom: -1px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-radius: 0;
+        }
+        .tab-btn svg {
+            margin-right: 6px;
+        }
+        .tab-btn:hover {
+            color: var(--ink);
+            background: var(--elevated);
+        }
+        .tab-btn.active {
+            color: var(--ink);
+            font-weight: 600;
+            border-bottom-color: var(--ink);
+        }
+
+        /* ==========================================
+           TAB CONTENT
+           ========================================== */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: 1fr 1.25fr;
+            gap: 28px;
+        }
+        @media (max-width: 768px) {
+            .tab-content.active {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ==========================================
+           SECTION CARDS
+           ========================================== */
+        .section-card {
+            background: var(--canvas);
+            border: 1px solid var(--hairline);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            transition: border-color 0.15s ease;
+        }
+
+        .section-card:hover {
+            border-color: #d0d3d8;
+        }
+        body.dark .section-card:hover {
+            border-color: #3a3a42;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0 0 16px;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ==========================================
+           FORMS
+           ========================================== */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* ==========================================
+           DYNAMIC LISTS
+           ========================================== */
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* ==========================================
+           MODAL (Public Proxies)
+           ========================================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.65);
+            z-index: 50;
+            padding: 2rem;
+            overflow-y: auto;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-card {
+            background: var(--canvas);
+            border: 1px solid var(--hairline);
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 28px;
+            border-radius: var(--radius-lg);
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            color: var(--muted);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+        }
+        .modal-close:hover {
+            color: var(--ink);
+            background: var(--elevated);
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0 0 20px;
+            color: var(--ink);
+        }
+
+        .modal-filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .modal-filters select {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .modal-loading {
+            text-align: center;
+            padding: 32px;
+            color: var(--muted);
+            display: none;
+        }
+
+        .modal-proxy-list {
+            max-height: 450px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .modal-footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 16px;
+        }
+
+        /* ==========================================
+           IMPORT / EXPORT SPECIFICS
+           ========================================== */
+        .import-trigger {
+            width: 100%;
+            border-style: dashed !important;
+            border-width: 2px !important;
+            padding: 12px 16px;
+            background: var(--elevated);
+            color: var(--body);
+        }
+        .import-trigger:hover {
+            border-color: var(--ink);
+            color: var(--ink);
+        }
+
+        .import-file-status {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: var(--body);
+            margin: 0 0 16px;
+            line-height: 1.5;
+        }
+
+        .import-warning {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        /* ==========================================
+           MISC UTILITIES
+           ========================================== */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-muted {
+            color: var(--body);
+            font-size: 13px;
+        }
+
+        .flex-2 {
+            flex: 2;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <img src="../../icons/icon-default.png" style="height: 48px;" />
-            <h1 data-i18n="extensionName">Proxy Router Manager</h1>
-            <button id="theme-toggle" class="btn-theme"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/><path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.73 1.73 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.73 1.73 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.73 1.73 0 0 0 1.097-1.097zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/></svg> <span>Темная тема</span></button>
+        <!-- HEADER -->
+        <header class="page-header">
+            <div class="page-header-left">
+                <img src="../../icons/icon-default.png" alt="Proxy Router" />
+                <h1 class="page-title" data-i18n="extensionName">Proxy Router Manager</h1>
+            </div>
+            <div class="page-header-right">
+                <button id="theme-toggle" class="btn-theme">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/>
+                        <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.73 1.73 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.73 1.73 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.73 1.73 0 0 0 1.097-1.097zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/>
+                    </svg>
+                    <span>Темная тема</span>
+                </button>
+            </div>
         </header>
 
-        <!-- ПАНЕЛЬ ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК -->
+        <!-- TAB NAVIGATION -->
         <nav class="tabs-nav">
             <button class="tab-btn active" data-tab="proxies">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-shield-check" viewBox="0 0 16 16">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/>
                     <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
                 </svg>
@@ -98,97 +369,121 @@
             </button>
         </nav>
 
-        <!-- ВКЛАДКА 1: ПРОКСИ -->
+        <!-- TAB 1: PROXIES -->
         <div id="tab-content-proxies" class="tab-content active">
             <div class="forms-column">
-                <section>
-                    <h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-shield-check" viewBox="0 0 16 16">
+                <!-- Add / Edit Proxy -->
+                <section class="section-card">
+                    <h3 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/>
                             <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
                         </svg>
-                        <span> Добавить / Изменить прокси</span>
+                        <span data-i18n="proxyAddTitle"> Добавить / Изменить прокси</span>
                     </h3>
                     <div class="form-group">
                         <div class="input-row">
                             <input type="text" id="p-name" placeholder="Название (напр. Proxy SOCKS)">
-                            <select id="p-type" style="max-width: 110px;">
+                            <select id="p-type" class="select-sm">
                                 <option value="socks">SOCKS5</option>
                                 <option value="http">HTTP</option>
                             </select>
                         </div>
                         <div class="input-row">
                             <input type="text" id="p-host" placeholder="Host или IP или socks5://login:passwd@host:port">
-                            <input type="number" id="p-port" placeholder="Порт" style="max-width: 90px;">
+                            <input type="number" id="p-port" class="input-sm" placeholder="Порт">
                         </div>
                         <div class="input-row">
                             <input type="text" id="p-user" placeholder="Логин (опционально)">
                             <input type="text" id="p-pass" placeholder="Пароль (опционально)">
                         </div>
                         <div class="input-row">
-                            <button id="btn-add-proxy" class="btn-primary" style="flex: 2;">Добавить прокси</button>
+                            <button id="btn-add-proxy" class="btn-primary flex-2">Добавить прокси</button>
                             <button id="cancel-edit">Отмена</button>
                         </div>
                     </div>
                 </section>
-                <section>
-                    <button id="btn-open-public-proxies" class="btn-primary" style="margin-bottom: 1.5rem; width: 100%; background-color: #0ea5e9;">
-                        🌐 Импортировать из публичных прокси
+
+                <!-- Public Proxies -->
+                <section class="section-card">
+                    <button id="btn-open-public-proxies" class="btn-primary btn-full" style="margin-bottom: 16px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855q-.215.403-.395.872c.705.157 1.472.257 2.282.287zM4.249 3.539q.214-.577.481-1.078a7 7 0 0 1 .597-.933A7 7 0 0 0 3.051 3.05q.544.277 1.198.49zM3.509 7.5c.036-1.07.188-2.087.436-3.008a9 9 0 0 1-1.565-.667A6.96 6.96 0 0 0 1.018 7.5zm1.4-2.741a12.3 12.3 0 0 0-.4 2.741H7.5V5.091c-.91-.03-1.783-.145-2.591-.332M8.5 5.09V7.5h2.99a12.3 12.3 0 0 0-.399-2.741c-.808.187-1.681.301-2.591.332zM4.51 8.5c.035.987.176 1.914.399 2.741A13.6 13.6 0 0 1 7.5 10.91V8.5zm3.99 0v2.409c.91.03 1.783.145 2.591.332.223-.827.364-1.754.4-2.741zm-3.282 3.696q.18.469.395.872c.552 1.035 1.218 1.65 1.887 1.855V11.91c-.81.03-1.577.13-2.282.287zm.11 2.276a7 7 0 0 1-.598-.933 9 9 0 0 1-.481-1.079 8.4 8.4 0 0 0-1.198.49 7 7 0 0 0 2.276 1.522zm-1.383-2.964A13.4 13.4 0 0 1 3.508 8.5h-2.49a6.96 6.96 0 0 0 1.362 3.675c.47-.258.995-.482 1.565-.667m6.728 2.964a7 7 0 0 0 2.275-1.521 8.4 8.4 0 0 0-1.197-.49 9 9 0 0 1-.481 1.078 7 7 0 0 1-.597.933M8.5 11.909v3.014c.67-.204 1.335-.82 1.887-1.855q.216-.403.395-.872A12.6 12.6 0 0 0 8.5 11.91zm3.555-.401c.57.185 1.095.409 1.565.667A6.96 6.96 0 0 0 14.982 8.5h-2.49a13.4 13.4 0 0 1-.437 3.008M14.982 7.5a6.96 6.96 0 0 0-1.362-3.675c-.47.258-.995.482-1.565.667.248.92.4 1.938.437 3.008zM11.27 2.461q.266.502.482 1.078a8.4 8.4 0 0 0 1.196-.49 7 7 0 0 0-2.275-1.52c.218.283.418.597.597.932m-.488 1.343a8 8 0 0 0-.395-.872C9.835 1.897 9.17 1.282 8.5 1.077V4.09c.81-.03 1.577-.13 2.282-.287z"/>
+                        </svg>
+                        Импортировать из публичных прокси
                     </button>
 
-                    <div id="public-proxies-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); z-index: 50; padding: 2rem; overflow-y: auto; backdrop-filter: blur(4px);">
-                        <div style="background: var(--bg-card); border: 1px solid var(--border); max-width: 700px; margin: 2rem auto; padding: 2rem; border-radius: 1rem; position: relative; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);">
-                            <button id="btn-close-modal" style="position: absolute; top: 1rem; right: 1.5rem; background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+                    <!-- Modal -->
+                    <div id="public-proxies-modal" class="modal-overlay">
+                        <div class="modal-card">
+                            <button id="btn-close-modal" class="modal-close">&times;</button>
 
-                            <h3 style="margin-bottom: 1.5rem; color: var(--text-main);">☁️ Публичные прокси (Free Proxy List)</h3>
+                            <h3 class="modal-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855q-.215.403-.395.872c.705.157 1.472.257 2.282.287zM4.249 3.539q.214-.577.481-1.078a7 7 0 0 1 .597-.933A7 7 0 0 0 3.051 3.05q.544.277 1.198.49zM3.509 7.5c.036-1.07.188-2.087.436-3.008a9 9 0 0 1-1.565-.667A6.96 6.96 0 0 0 1.018 7.5zm1.4-2.741a12.3 12.3 0 0 0-.4 2.741H7.5V5.091c-.91-.03-1.783-.145-2.591-.332M8.5 5.09V7.5h2.99a12.3 12.3 0 0 0-.399-2.741c-.808.187-1.681.301-2.591.332zM4.51 8.5c.035.987.176 1.914.399 2.741A13.6 13.6 0 0 1 7.5 10.91V8.5zm3.99 0v2.409c.91.03 1.783.145 2.591.332.223-.827.364-1.754.4-2.741zm-3.282 3.696q.18.469.395.872c.552 1.035 1.218 1.65 1.887 1.855V11.91c-.81.03-1.577.13-2.282.287zm.11 2.276a7 7 0 0 1-.598-.933 9 9 0 0 1-.481-1.079 8.4 8.4 0 0 0-1.198.49 7 7 0 0 0 2.276 1.522zm-1.383-2.964A13.4 13.4 0 0 1 3.508 8.5h-2.49a6.96 6.96 0 0 0 1.362 3.675c.47-.258.995-.482 1.565-.667m6.728 2.964a7 7 0 0 0 2.275-1.521 8.4 8.4 0 0 0-1.197-.49 9 9 0 0 1-.481 1.078 7 7 0 0 1-.597.933M8.5 11.909v3.014c.67-.204 1.335-.82 1.887-1.855q.216-.403.395-.872A12.6 12.6 0 0 0 8.5 11.91zm3.555-.401c.57.185 1.095.409 1.565.667A6.96 6.96 0 0 0 14.982 8.5h-2.49a13.4 13.4 0 0 1-.437 3.008M14.982 7.5a6.96 6.96 0 0 0-1.362-3.675c-.47.258-.995.482-1.565.667.248.92.4 1.938.437 3.008zM11.27 2.461q.266.502.482 1.078a8.4 8.4 0 0 0 1.196-.49 7 7 0 0 0-2.275-1.52c.218.283.418.597.597.932m-.488 1.343a8 8 0 0 0-.395-.872C9.835 1.897 9.17 1.282 8.5 1.077V4.09c.81-.03 1.577-.13 2.282-.287z"/>
+                                </svg>
+                                Публичные прокси (Free Proxy List)
+                            </h3>
 
-                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                                <select id="pub-filter-protocol" style="flex: 1; min-width: 120px;">
+                            <div class="modal-filters">
+                                <select id="pub-filter-protocol">
                                     <option value="">Все протоколы</option>
                                 </select>
-                                <select id="pub-filter-geo" style="flex: 1; min-width: 150px;">
+                                <select id="pub-filter-geo">
                                     <option value="">Все страны</option>
                                 </select>
-                                <button id="btn-refresh-pub" class="btn-primary" style="background-color: var(--text-muted);">🔄 Обновить</button>
+                                <button id="btn-refresh-pub" class="btn-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+                                    </svg>
+                                    Обновить
+                                </button>
                             </div>
 
-                            <div id="pub-loading" style="text-align: center; padding: 2rem; color: var(--text-muted); display: none;">
+                            <div id="pub-loading" class="modal-loading">
                                 Загрузка списка (может занять пару секунд)...
                             </div>
 
-                            <div id="pub-proxy-list" class="item-list" style="max-height: 450px; overflow-y: auto; padding-right: 0.5rem;">
+                            <div id="pub-proxy-list" class="modal-proxy-list item-list">
                             </div>
-                            <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
+
+                            <div class="modal-footer">
                                 Отображаются первые 100 результатов, подходящих под фильтр.
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
+
             <div class="lists-column">
-                <section>
-                    <h3>Ваши прокси-серверы</h3>
+                <section class="section-card">
+                    <h3 class="section-title">Ваши прокси-серверы</h3>
                     <div id="proxy-list" class="item-list"></div>
                 </section>
             </div>
         </div>
 
-        <!-- ВКЛАДКА 2: МАРШРУТИЗАЦИЯ И МАСКИ -->
+        <!-- TAB 2: ROUTING -->
         <div id="tab-content-routing" class="tab-content">
             <div class="forms-column">
-                <section style="border-left: 4px solid #ef4444;">
-                    <h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ef4444" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.093 3.093c-.465 4.275.885 7.46 2.513 9.589a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.3 11.3 0 0 0 1.733-1.525l-.745-.745a10.3 10.3 0 0 1-1.578 1.392c-.346.244-.652.42-.893.533q-.18.085-.293.118a1 1 0 0 1-.101.025 1 1 0 0 1-.1-.025 2 2 0 0 1-.294-.118 6 6 0 0 1-.893-.533 10.7 10.7 0 0 1-2.287-2.233C3.053 10.228 1.879 7.594 2.06 4.06zM3.98 1.98l-.852-.852A59 59 0 0 1 5.072.559C6.157.266 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.483 3.626-.332 6.491-1.551 8.616l-.77-.77c1.042-1.915 1.72-4.469 1.29-7.702a.48.48 0 0 0-.33-.39c-.65-.213-1.75-.56-2.836-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524a50 50 0 0 0-1.357.39zm9.666 12.374-13-13 .708-.708 13 13z"/></svg>
+                <!-- Exceptions -->
+                <section class="section-card section-danger">
+                    <h3 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="var(--danger)" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1.093 3.093c-.465 4.275.885 7.46 2.513 9.589a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.3 11.3 0 0 0 1.733-1.525l-.745-.745a10.3 10.3 0 0 1-1.578 1.392c-.346.244-.652.42-.893.533q-.18.085-.293.118a1 1 0 0 1-.101.025 1 1 0 0 1-.1-.025 2 2 0 0 1-.294-.118 6 6 0 0 1-.893-.533 10.7 10.7 0 0 1-2.287-2.233C3.053 10.228 1.879 7.594 2.06 4.06zM3.98 1.98l-.852-.852A59 59 0 0 1 5.072.559C6.157.266 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.483 3.626-.332 6.491-1.551 8.616l-.77-.77c1.042-1.915 1.72-4.469 1.29-7.702a.48.48 0 0 0-.33-.39c-.65-.213-1.75-.56-2.836-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524a50 50 0 0 0-1.357.39zm9.666 12.374-13-13 .708-.708 13 13z"/>
+                        </svg>
                         <span> Исключения (Прямое соединение)</span>
                     </h3>
                     <div class="form-group">
                         <textarea id="ex-domains" placeholder="Вставьте маски сайтов, которые НЕ ДОЛЖНЫ идти через прокси:&#10;*.gosuslugi.ru&#10;*.local&#10;кинопоиск.ру"></textarea>
-                        <button id="btn-save-exceptions" class="btn-primary" style="background-color: #dc2626;">Сохранить исключения</button>
+                        <button id="btn-save-exceptions" class="btn-primary" style="background-color: var(--danger);">Сохранить исключения</button>
                     </div>
                 </section>
 
-                <section>
-                    <h3>
+                <!-- Create Domain Masks -->
+                <section class="section-card">
+                    <h3 class="section-title">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1zm-.5 2.5A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5M5 8a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1z"/>
                             <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1"/>
@@ -199,14 +494,15 @@
                         <input type="text" id="d-name" placeholder="Название списка (напр. Соцсети)">
                         <textarea id="d-domains" placeholder="Вставьте маски, каждую с новой строки:&#10;*.example.com&#10;site.com/app/*&#10;*.mywork.org"></textarea>
                         <div class="input-row">
-                            <button id="btn-add-domain" class="btn-primary" style="flex: 2;">Добавить группу</button>
+                            <button id="btn-add-domain" class="btn-primary flex-2">Добавить группу</button>
                             <button id="cancel-domain-edit">Отмена</button>
                         </div>
                     </div>
                 </section>
 
-                <section>
-                    <h3>
+                <!-- Activate Rule -->
+                <section class="section-card">
+                    <h3 class="section-title">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"/>
                             <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"/>
@@ -215,60 +511,74 @@
                     </h3>
                     <div class="form-group">
                         <select id="r-domain"></select>
-                        <div style="text-align: center; font-size: 0.9rem; color: var(--text-muted);">направлять через</div>
+                        <div class="text-center text-muted">направлять через</div>
                         <select id="r-proxy"></select>
                         <button id="btn-add-rule" class="btn-primary">Включить маршрут</button>
                     </div>
                 </section>
             </div>
+
             <div class="lists-column">
-                <section>
-                    <h3>Активные правила проксирования</h3>
+                <section class="section-card">
+                    <h3 class="section-title">Активные правила проксирования</h3>
                     <div id="rule-list" class="item-list"></div>
                 </section>
 
-                <section>
-                    <h3>Списки доменов / путей</h3>
+                <section class="section-card">
+                    <h3 class="section-title">Списки доменов / путей</h3>
                     <div id="domain-list" class="item-list"></div>
                 </section>
             </div>
         </div>
 
-        <!-- ВКЛАДКА 3: ЭКСПОРТ / ИМПОРТ -->
+        <!-- TAB 3: EXPORT / IMPORT -->
         <div id="tab-content-import-export" class="tab-content">
             <div class="forms-column">
-                <section style="border-left: 4px solid #4f46e5;">
-                    <h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/></svg> Экспорт настроек</h3>
-                    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
+                <!-- Export -->
+                <section class="section-card section-brand">
+                    <h3 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                            <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+                        </svg>
+                        Экспорт настроек
+                    </h3>
+                    <p class="section-desc">
                         Скачайте файл со всеми вашими прокси, группами доменов, правилами и исключениями для резервного копирования или переноса.
                     </p>
-                    <button id="btn-export-settings" class="btn-primary btn-full" style="width: 100%;">
+                    <button id="btn-export-settings" class="btn-primary btn-full">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M11 2H9v3h2z"/>
                             <path d="M1.5 0h11.586a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13A1.5 1.5 0 0 1 1.5 0M1 1.5v13a.5.5 0 0 0 .5.5H2v-4.5A1.5 1.5 0 0 1 3.5 9h9a1.5 1.5 0 0 1 1.5 1.5V15h.5a.5.5 0 0 0 .5-.5V2.914a.5.5 0 0 0-.146-.353l-1.415-1.415A.5.5 0 0 0 13.086 1H13v4.5A1.5 1.5 0 0 1 11.5 7h-7A1.5 1.5 0 0 1 3 5.5V1H1.5a.5.5 0 0 0-.5.5m3 4a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V1H4zM3 15h10v-4.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z"/>
-                        </svg> Скачать настройки (.json)
+                        </svg>
+                        Скачать настройки (.json)
                     </button>
                 </section>
             </div>
 
             <div class="lists-column">
-                <section style="border-left: 4px solid #f59e0b;">
-                    <h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg> Импорт настроек</h3>
-                    <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">
-                        Выберите ранее сохраненный JSON-файл. <strong style="color: #dc2626;">Внимание!</strong> Текущие настройки будут полностью заменены данными из файла.
+                <!-- Import -->
+                <section class="section-card section-warning">
+                    <h3 class="section-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                        </svg>
+                        Импорт настроек
+                    </h3>
+                    <p class="section-desc">
+                        Выберите ранее сохраненный JSON-файл. <span class="import-warning">Внимание!</span> Текущие настройки будут полностью заменены данными из файла.
                     </p>
                     <div class="form-group">
                         <input type="file" id="import-file-input" accept=".json" style="display: none;">
-                        <button id="btn-trigger-import" class="btn-full" style="width: 100%; border-style: dashed; border-width: 2px;">
+                        <button id="btn-trigger-import" class="import-trigger">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7z"/>
                             </svg>
                             <span> Выбрать файл JSON</span>
                         </button>
-                        <div id="import-file-status" style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">
-                            Файл не выбран
-                        </div>
-                        <button id="btn-import-settings" class="btn-primary btn-full" style="background-color: #d97706; width: 100%; display: none;">
+                        <div id="import-file-status" class="import-file-status">Файл не выбран</div>
+                        <button id="btn-import-settings" class="btn-primary btn-full" style="background-color: #d97706; display: none;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M11 2H9v3h2z"/>
                                 <path d="M1.5 0h11.586a1.5 1.5 0 0 1 1.06.44l1.415 1.414A1.5 1.5 0 0 1 16 2.914V14.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5v-13A1.5 1.5 0 0 1 1.5 0M1 1.5v13a.5.5 0 0 0 .5.5H2v-4.5A1.5 1.5 0 0 1 3.5 9h9a1.5 1.5 0 0 1 1.5 1.5V15h.5a.5.5 0 0 0 .5-.5V2.914a.5.5 0 0 0-.146-.353l-1.415-1.415A.5.5 0 0 0 13.086 1H13v4.5A1.5 1.5 0 0 1 11.5 7h-7A1.5 1.5 0 0 1 3 5.5V1H1.5a.5.5 0 0 0-.5.5m3 4a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V1H4zM3 15h10v-4.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z"/>
@@ -280,13 +590,15 @@
             </div>
         </div>
     </div>
-    <!-- Шаблоны иконок для кнопки темы (избегаем innerHTML/createContextualFragment) -->
+
+    <!-- Icon templates for theme toggle -->
     <template id="icon-sun">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16"><path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/></svg>
     </template>
     <template id="icon-moon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/><path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.73 1.73 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.73 1.73 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.73 1.73 0 0 0 1.097-1.097zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277q.792-.001 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278"/><path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.73 1.73 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.73 1.73 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.73 1.73 0 0 0 1.097-1.097zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/></svg>
     </template>
+
     <script type="module" src="options.js"></script>
 </body>
 </html>

@@ -53,7 +53,7 @@ export function setupForms(state, { genId, safeDecodeURIComponent }) {
             fields.forEach(id => {
                 const el = document.getElementById(id);
                 el.style.transition = 'background-color 0.5s';
-                el.style.backgroundColor = 'rgba(79, 70, 229, 0.1)';
+                el.style.backgroundColor = 'rgba(13, 116, 206, 0.06)';
                 setTimeout(() => el.style.backgroundColor = '', 1000);
             });
         }
@@ -111,7 +111,7 @@ export function setupForms(state, { genId, safeDecodeURIComponent }) {
         const oldBg = saveBtn.style.backgroundColor;
         const oldText = saveBtn.textContent;
 
-        saveBtn.style.backgroundColor = '#16a34a';
+        saveBtn.style.backgroundColor = 'var(--success)';
         saveBtn.textContent = '✓ Сохранено!';
 
         setTimeout(() => {

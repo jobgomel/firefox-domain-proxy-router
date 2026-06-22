@@ -36,11 +36,11 @@ export function setupExportImport(state) {
         if (file) {
             statusDiv.replaceChildren();
             statusDiv.appendChild(document.createTextNode(`Выбран файл: ${file.name}`));
-            statusDiv.style.color = 'var(--text-main)';
+            statusDiv.style.color = 'var(--ink)';
             importBtn.style.display = 'inline-flex';
         } else {
             statusDiv.textContent = 'Файл не выбран';
-            statusDiv.style.color = 'var(--text-muted)';
+            statusDiv.style.color = 'var(--muted)';
             importBtn.style.display = 'none';
         }
     };
@@ -64,7 +64,7 @@ export function setupExportImport(state) {
                 fileInput.value = '';
                 importBtn.style.display = 'none';
                 statusDiv.textContent = '✅ Настройки успешно импортированы!';
-                statusDiv.style.color = 'var(--text-success)';
+                statusDiv.style.color = 'var(--success)';
 
                 alert('Настройки успешно восстановлены!');
             } catch (err) {

@@ -87,7 +87,7 @@ function renderRules(state) {
         title.className = 'card-title';
         title.appendChild(document.createTextNode('Если подходит под маски '));
         const domainSpan = document.createElement('span');
-        domainSpan.style.color = 'var(--primary)';
+        domainSpan.style.color = 'var(--accent)';
         domainSpan.textContent = `[${dName}]`;
         title.appendChild(domainSpan);
 

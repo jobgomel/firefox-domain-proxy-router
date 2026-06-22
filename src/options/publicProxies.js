@@ -41,7 +41,7 @@ export function setupPublicProxies(state, { genId }) {
         const container = document.createElement('div');
         container.style.cssText = 'text-align:center; padding:1rem;';
         const msgEl = document.createElement('div');
-        msgEl.style.cssText = 'color:#dc2626; margin-bottom:0.75rem;';
+        msgEl.style.color = 'var(--danger)';
         msgEl.textContent = `❌ ${message}`;
         container.appendChild(msgEl);
         if (retryFn) {
@@ -128,7 +128,7 @@ export function setupPublicProxies(state, { genId }) {
 
         if (limited.length === 0) {
             const emptyDiv = document.createElement('div');
-            emptyDiv.style.cssText = 'color:var(--text-muted); text-align:center; padding:1rem;';
+            emptyDiv.className = 'placeholder-text';
             emptyDiv.textContent = 'Ничего не найдено по заданным фильтрам';
             pubListContainer.replaceChildren(emptyDiv);
             return;
@@ -143,7 +143,8 @@ export function setupPublicProxies(state, { genId }) {
             title.appendChild(document.createTextNode(`${p.ip}:${p.port} `));
             const badge = document.createElement('span');
             badge.className = 'badge badge-noauth';
-            badge.style.cssText = 'background:#e0e7ff; color:#4338ca;';
+            badge.style.background = 'var(--elevated)';
+            badge.style.color = 'var(--body)';
             badge.textContent = p.protocol.toUpperCase();
             title.appendChild(badge);
 
@@ -160,7 +161,7 @@ export function setupPublicProxies(state, { genId }) {
                 const btn = controls.querySelector('.btn-primary');
                 if (btn) {
                     btn.textContent = '✓ Добавлено';
-                    btn.style.backgroundColor = 'var(--text-success)';
+                    btn.style.backgroundColor = 'var(--success)';
                     btn.disabled = true;
                 }
             }));

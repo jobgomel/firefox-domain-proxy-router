@@ -1,219 +1,481 @@
 /* ==========================================
-   GLOBAL DESIGN SYSTEM (Light/Dark Mode)
+   DESIGN SYSTEM — Domain Proxy Router
+   Inspired by awesome-design-md/expo principles
+   Near-black ink, pure white canvas, 1px hairlines,
+   8px CTAs, 12px cards, pill badges only
    ========================================== */
 
 :root {
-    /* Цветовая палитра (Светлая тема по умолчанию) */
-    --bg-body: #f1f5f9;
-    --bg-card: #ffffff;
-    --bg-input: #f8fafc;
+    /* Canvas & surfaces */
+    --canvas: #ffffff;
+    --elevated: #f5f5f7;
+    --input-bg: #f8f8fa;
 
-    --text-main: #0f172a;
-    --text-muted: #64748b;
+    /* Ink (text) */
+    --ink: #171717;
+    --body: #60646c;
+    --muted: #8e919a;
 
-    --border: #e2e8f0;
-    --border-focus: #6366f1;
+    /* Borders — 1px hairlines */
+    --hairline: #e4e7ec;
+    --hairline-focus: #0d74ce;
 
-    --primary: #6366f1; /* Индиго */
-    --primary-hover: #4f46e5;
+    /* Brand / Actions */
+    --primary: #171717;       /* near-black — primary CTAs */
+    --primary-hover: #000000;
+    --accent: #0d74ce;        /* blue — inline links, focus rings only */
 
+    /* Semantic */
     --success: #10b981;
-    --danger: #ef4444;
+    --danger: #dc2626;
 
-    --bg-elevated: #f1f5f9;
+    /* Success feedback (non-text) */
+    --success-bg: #f0fdf4;
+    --success-border: #bbf7d0;
+    --danger-bg: #fef2f2;
+    --danger-border: #fecaca;
 
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 20px;
+    /* Shapes — per design prompt */
+    --radius-sm: 6px;
+    --radius-md: 8px;         /* CTAs, inputs */
+    --radius-lg: 12px;        /* cards */
+    --radius-pill: 9999px;    /* badges only */
 
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+    /* Elevation */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.06);
 
-    --text-success: #166534;
-    --bg-success: #f0fdf4;
-    --border-success: #bbf7d0;
+    /* Typography */
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "SF Mono", "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+
+    /* Spacing (4px base) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
 }
 
+/* ========== Dark Theme ========== */
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg-body: #0f172a;
-        --bg-card: #1e293b;
-        --bg-input: #0f172a;
-        --bg-elevated: #334155;
+        --canvas: #1a1a1e;
+        --elevated: #26262b;
+        --input-bg: #1e1e22;
 
-        --text-main: #f8fafc;
-        --text-muted: #94a3b8;
+        --ink: #efeff4;
+        --body: #9898a2;
+        --muted: #6b6b78;
 
-        --border: #334155;
-        --border-focus: #818cf8;
+        --hairline: #2c2c32;
+        --hairline-focus: #60a5fa;
 
-        --primary: #818cf8;
-        --primary-hover: #6366f1;
+        --primary: #ffffff;
+        --primary-hover: #e0e0e4;
+        --accent: #60a5fa;
 
-        --text-success: #4ade80;
-        --bg-success: #052e16;
-        --border-success: #15803d;
+        --success: #34d399;
+        --danger: #f87171;
+
+        --success-bg: #052e16;
+        --success-border: #15803d;
+        --danger-bg: #4c0519;
+        --danger-border: #991b1b;
+
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 }
 
-/* Принудительная тёмная тема (класс на body — для ручного переключения) */
+/* Forced dark mode — manual toggle via body class */
 body.dark {
-    --bg-body: #0f172a;
-    --bg-card: #1e293b;
-    --bg-input: #0f172a;
-    --bg-elevated: #334155;
+    --canvas: #1a1a1e;
+    --elevated: #26262b;
+    --input-bg: #1e1e22;
 
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    --ink: #efeff4;
+    --body: #9898a2;
+    --muted: #6b6b78;
 
-    --border: #334155;
-    --border-focus: #818cf8;
+    --hairline: #2c2c32;
+    --hairline-focus: #60a5fa;
 
-    --primary: #818cf8;
-    --primary-hover: #6366f1;
+    --primary: #ffffff;
+    --primary-hover: #e0e0e4;
+    --accent: #60a5fa;
 
-    --text-success: #4ade80;
-    --bg-success: #052e16;
-    --border-success: #15803d;
+    --success: #34d399;
+    --danger: #f87171;
+
+    --success-bg: #052e16;
+    --success-border: #15803d;
+    --danger-bg: #4c0519;
+    --danger-border: #991b1b;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-/* Базовые стили */
+/* ========== Base ========== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-body);
-    color: var(--text-main);
+    font-family: var(--font-sans);
+    background-color: var(--canvas);
+    color: var(--ink);
     margin: 0;
     padding: 0;
     line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* ==========================================
-   ФОРМЫ И ВВОД
+   Forms & Inputs
    ========================================== */
 input[type="text"],
 input[type="password"],
 input[type="number"],
+textarea,
 select {
     width: 100%;
-    padding: 0.6rem 1rem;
-    border: 1px solid var(--border);
+    padding: 9px 12px;
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-md);
-    background-color: var(--bg-input);
-    color: var(--text-main);
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
+    background-color: var(--input-bg);
+    color: var(--ink);
+    font-size: 13px;
+    font-family: inherit;
+    line-height: 1.5;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
     box-sizing: border-box;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus,
+textarea:focus {
     outline: none;
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    border-color: var(--hairline-focus);
+    box-shadow: 0 0 0 3px rgba(13, 116, 206, 0.12);
+}
+
+body.dark input:focus,
+body.dark select:focus,
+body.dark textarea:focus {
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+}
+
+::placeholder {
+    color: var(--muted);
+}
+
+/* Narrow / small input variants */
+.input-sm {
+    max-width: 100px !important;
+}
+
+.select-sm {
+    max-width: 110px !important;
 }
 
 /* ==========================================
-   КНОПКИ
+   Buttons
    ========================================== */
 button {
     font-family: inherit;
     cursor: pointer;
-    border: none;
-    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md); /* 8px — per design prompt: "Set every CTA at rounded.md" */
     font-weight: 500;
-    transition: all 0.2s ease;
+    font-size: 13px;
+    transition: all 0.15s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 6px;
+    line-height: 1.4;
+    padding: 9px 16px;
 }
 
+button:active {
+    transform: scale(0.97);
+}
+
+/* Primary CTA — near-black per design prompt (black reserved for primary CTAs) */
 .btn-primary {
     background-color: var(--primary);
-    color: white;
-    padding: 0.6rem 1.2rem;
-    box-shadow: var(--shadow-sm);
+    color: var(--canvas);
+    border: none;
 }
 .btn-primary:hover {
     background-color: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
 }
 
+/* Default / ghost button (no explicit class) */
+button:not(.btn-primary):not(.btn-danger):not(.btn-test):not(.btn-edit):not(.btn-del):not(.btn-settings):not(.tab-btn):not(.btn-theme) {
+    background-color: var(--elevated);
+    color: var(--ink);
+    border-color: var(--hairline);
+}
+button:not(.btn-primary):not(.btn-danger):not(.btn-test):not(.btn-edit):not(.btn-del):not(.btn-settings):not(.tab-btn):not(.btn-theme):hover {
+    background-color: #eaeaee;
+}
+body.dark button:not(.btn-primary):not(.btn-danger):not(.btn-test):not(.btn-edit):not(.btn-del):not(.btn-settings):not(.tab-btn):not(.btn-theme):hover {
+    background-color: #32323a;
+}
+
+/* Danger */
 .btn-danger {
-    background-color: #fee2e2;
     color: var(--danger);
-    padding: 0.4rem 0.8rem;
+    background: transparent;
+    border-color: var(--danger);
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
 }
 .btn-danger:hover {
-    background-color: #fca5a5;
+    background-color: var(--danger);
     color: white;
 }
 
+/* Test */
 .btn-test {
-    background-color: #e0e7ff;
-    color: var(--primary);
-    padding: 0.4rem 0.8rem;
+    color: var(--success);
+    background: transparent;
+    border-color: var(--success);
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
 }
-.btn-test:hover { background-color: #c7d2fe; }
+.btn-test:hover {
+    background-color: var(--success);
+    color: white;
+}
+
+/* Edit — minimal ghost */
+.btn-edit {
+    background: transparent;
+    color: var(--body);
+    border-color: var(--hairline);
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.btn-edit:hover {
+    background-color: var(--elevated);
+    color: var(--ink);
+}
+
+/* Delete — subtle red ghost */
+.btn-del {
+    background: transparent;
+    color: var(--danger);
+    border-color: transparent;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.btn-del:hover {
+    background: rgba(220, 38, 38, 0.08);
+    border-color: var(--danger);
+}
+body.dark .btn-del:hover {
+    background: rgba(248, 113, 113, 0.1);
+}
+
+/* Full-width button */
+.btn-full {
+    width: 100%;
+}
+
+/* Cancel buttons (hidden by default, shown during edit) */
+#cancel-edit,
+#cancel-domain-edit {
+    display: none;
+    background-color: var(--elevated);
+    color: var(--body);
+    border-color: var(--hairline);
+}
 
 /* ==========================================
-   КАРТОЧКИ И СПИСКИ
+   Cards & Dynamic Lists
    ========================================== */
 .card-row {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border);
+    background-color: var(--canvas);
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-md);
-    padding: 1rem;
+    padding: 12px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
-    transition: all 0.15s ease;
+    gap: 12px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .card-row:hover {
-    border-color: var(--primary);
-    box-shadow: var(--shadow-md);
-    /*transform: translateY(-1px);*/
+    border-color: var(--ink);
+    box-shadow: var(--shadow-sm);
 }
 
-.card-info { display: flex; flex-direction: column; gap: 0.25rem; }
-.card-title { font-weight: 600; font-size: 1rem; }
-.card-sub { font-size: 0.85rem; color: var(--text-muted); }
+.card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
 
-.badge {
-    padding: 0.15rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    text-transform: uppercase;
+.card-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.card-sub {
+    font-size: 12px;
+    color: var(--body);
+    font-family: var(--font-mono);
+    word-break: break-all;
+    line-height: 1.4;
+}
+
+.controls-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.status-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--body);
 }
 
 /* ==========================================
-   СОВРЕМЕННЫЙ ТУМБЛЕР (Toggle Switch)
+   Badges — pill shape only (per design prompt)
+   "Pill geometry reserved for badges only"
+   ========================================== */
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: var(--radius-pill);
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+}
+
+.badge-auth {
+    background: rgba(13, 116, 206, 0.08);
+    color: var(--accent);
+}
+body.dark .badge-auth {
+    background: rgba(96, 165, 250, 0.12);
+}
+
+.badge-noauth {
+    background: var(--elevated);
+    color: var(--muted);
+}
+
+/* ==========================================
+   Toggle Switch
    ========================================== */
 .switch {
     position: relative;
     display: inline-block;
-    width: 50px;
-    height: 28px;
+    width: 38px;
+    height: 22px;
+    flex-shrink: 0;
 }
-.switch input { opacity: 0; width: 0; height: 0; }
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
 .slider {
-    position: absolute; cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: var(--border);
-    transition: .3s;
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: var(--hairline);
+    transition: 0.2s ease;
     border-radius: 34px;
 }
-.slider:before {
-    position: absolute; content: "";
-    height: 20px; width: 20px;
-    left: 4px; bottom: 4px;
+
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
     background-color: white;
-    transition: .3s;
+    transition: 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
     border-radius: 50%;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
-input:checked + .slider { background-color: var(--success); }
-input:checked + .slider:before { transform: translateX(22px); }
+
+input:checked + .slider {
+    background-color: var(--success);
+}
+
+input:checked + .slider::before {
+    transform: translateX(16px);
+}
+
+input:focus-visible + .slider {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* ==========================================
+   Section accent borders (for options page)
+   ========================================== */
+.section-danger {
+    border-left: 3px solid var(--danger) !important;
+}
+
+.section-brand {
+    border-left: 3px solid var(--primary) !important;
+}
+
+.section-warning {
+    border-left: 3px solid #d97706 !important;
+}
+
+/* ==========================================
+   Placeholder (empty state)
+   ========================================== */
+.placeholder-text {
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 16px;
+}

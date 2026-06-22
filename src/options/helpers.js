@@ -59,7 +59,7 @@ export function createBadge(text, isAuth) {
 
 export function createPlaceholder(text) {
     const div = document.createElement('div');
-    div.style.cssText = 'color:var(--text-muted); font-size:0.875rem;';
+    div.className = 'placeholder-text';
     div.textContent = text;
     return div;
 }
