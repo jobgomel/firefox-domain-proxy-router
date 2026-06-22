@@ -60,7 +60,26 @@ export async function setTabIconProxied(tabId) {
 }
 
 export function registerTabUrl(tabId, url) {
-    if (tabId && tabId !== -1) {
+    if (tabId && tabId !== -1 && url) {
         tabUrlsCache.set(tabId, url);
+    }
+}
+
+/**
+ * Восстанавливает tabUrlsCache после перезапуска Service Worker (MV3).
+ * Опрашивает все открытые вкладки и заполняет кеш их URL.
+ * Без этого tab-режим молча упадёт в global/direct до следующей навигации.
+ */
+export async function restoreTabUrlsCache() {
+    try {
+        const tabs = await browser.tabs.query({});
+        for (const tab of tabs) {
+            if (tab.id && tab.id !== -1 && tab.url) {
+                tabUrlsCache.set(tab.id, tab.url);
+            }
+        }
+        console.debug(`[UI] Восстановлен кеш URL для ${tabs.length} вкладок`);
+    } catch (err) {
+        console.warn(`[UI] Не удалось восстановить кеш URL вкладок: ${err.message}`);
     }
 }

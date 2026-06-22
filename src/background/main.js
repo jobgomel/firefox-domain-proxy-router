@@ -1,10 +1,14 @@
 import { initStorageCache, state, setTestProxyConfig } from './state.js';
 import { handleProxyRequest } from './proxyRoute.js';
-import { addHostToTab, setTabIconProxied, tabUrlsCache, resetTabHosts, registerTabUrl } from './ui.js';
+import { addHostToTab, setTabIconProxied, tabUrlsCache, resetTabHosts, registerTabUrl, restoreTabUrlsCache } from './ui.js';
 import { registerProxyAuthHandler } from './auth.js';
 
 // 1. Инициализируем локальный кеш при запуске скрипта
 initStorageCache();
+
+// 1.1 Восстанавливаем кеш URL вкладок после (возможного) перезапуска Service Worker
+// Без этого tab-режим сломается до следующей навигации пользователем
+restoreTabUrlsCache();
 
 // 2. Основной слушатель прокси
 browser.proxy.onRequest.addListener(
