@@ -7,6 +7,12 @@ const state = new OptionsState(renderAll);
 
 const genId = () => '_' + Math.random().toString(36).substr(2, 9);
 
+// Безопасное декодирование — не падает на некорректной percent-строке
+function safeDecodeURIComponent(str) {
+	try { return decodeURIComponent(str); }
+	catch (e) { return str; }
+}
+
 // Безопасное заполнение кнопки темы из HTML-шаблонов
 function setThemeToggle(isDark) {
 	const btn = document.getElementById('theme-toggle');
@@ -386,8 +392,8 @@ document.getElementById('p-host').addEventListener('input', function(e) {
 		document.getElementById('p-port').value = port;
 
 		if (user && pass) {
-			document.getElementById('p-user').value = decodeURIComponent(user);
-			document.getElementById('p-pass').value = decodeURIComponent(pass);
+			document.getElementById('p-user').value = safeDecodeURIComponent(user);
+			document.getElementById('p-pass').value = safeDecodeURIComponent(pass);
 		}
 
 		// Подсветим поля, чтобы было видно, что парсинг прошел успешно
@@ -537,12 +543,32 @@ btnRefreshPub.addEventListener('click', fetchPublicProxies);
 filterProto.addEventListener('change', renderPublicProxies);
 filterGeo.addEventListener('change', renderPublicProxies);
 
+function createErrorElement(message, retryFn) {
+	const container = document.createElement('div');
+	container.style.cssText = 'text-align:center; padding:1rem;';
+	const msgEl = document.createElement('div');
+	msgEl.style.cssText = 'color:#dc2626; margin-bottom:0.75rem;';
+	msgEl.textContent = `❌ ${message}`;
+	container.appendChild(msgEl);
+	if (retryFn) {
+		const retryBtn = document.createElement('button');
+		retryBtn.className = 'btn-test';
+		retryBtn.textContent = '↻ Повторить';
+		retryBtn.addEventListener('click', retryFn);
+		container.appendChild(retryBtn);
+	}
+	return container;
+}
+
 async function fetchPublicProxies() {
 	pubListContainer.innerHTML = '';
 	pubLoading.style.display = 'block';
 	try {
+		if (!navigator.onLine) {
+			throw new Error('Нет подключения к интернету. Проверьте соединение.');
+		}
 		const res = await fetch('https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/all/data.json', { cache: 'no-store' });
-		if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+		if (!res.ok) throw new Error(`Ошибка сервера (HTTP ${res.status})`);
 
 		const data = await res.json();
 		publicProxiesData = data;
@@ -560,10 +586,7 @@ async function fetchPublicProxies() {
 
 		renderPublicProxies();
 	} catch (err) {
-		const errDiv = document.createElement('div');
-		errDiv.style.cssText = 'color:#dc2626; padding:1rem;';
-		errDiv.textContent = `❌ Ошибка загрузки списка: ${err.message}`;
-		pubListContainer.replaceChildren(errDiv);
+		pubListContainer.replaceChildren(createErrorElement(err.message, fetchPublicProxies));
 	} finally {
 		pubLoading.style.display = 'none';
 	}
