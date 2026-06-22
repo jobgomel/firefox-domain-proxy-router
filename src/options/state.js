@@ -48,14 +48,14 @@ export class OptionsState {
     }
   }
 
-  async save() {
+  async save(renderHint = 'all') {
     try {
       await this._storage.set({ ...this._data });
     } catch (err) {
       console.error('[OptionsState] Ошибка сохранения:', err);
     }
     if (this._renderFn) {
-      try { this._renderFn(); } catch (e) { console.error('[OptionsState] Ошибка рендера:', e); }
+      try { this._renderFn(renderHint); } catch (e) { console.error('[OptionsState] Ошибка рендера:', e); }
     }
   }
 
@@ -68,50 +68,50 @@ export class OptionsState {
     return true;
   }
 
-  // ---- Мутаторы (каждый → save() → renderAll()) ----
+  // ---- Мутаторы (каждый → save(renderHint) → рендер секции) ----
 
   addProxy(id, config) {
     this._data.proxies[id] = config;
-    return this.save();
+    return this.save('proxy');
   }
 
   updateProxy(id, config) {
     this._data.proxies[id] = config;
-    return this.save();
+    return this.save('proxy');
   }
 
   deleteProxy(id) {
     delete this._data.proxies[id];
     this._data.rules = this._data.rules.filter(r => r.proxyId !== id);
-    return this.save();
+    return this.save('proxy');
   }
 
   addDomain(id, data) {
     this._data.domains[id] = data;
-    return this.save();
+    return this.save('domain');
   }
 
   updateDomain(id, data) {
     this._data.domains[id] = data;
-    return this.save();
+    return this.save('domain');
   }
 
   deleteDomain(id) {
     delete this._data.domains[id];
     this._data.rules = this._data.rules.filter(r => r.domainListId !== id);
-    return this.save();
+    return this.save('domain');
   }
 
   addRule(rule) {
     this._data.rules.push(rule);
-    return this.save();
+    return this.save('rule');
   }
 
   deleteRule(index) {
     if (index >= 0 && index < this._data.rules.length) {
       this._data.rules.splice(index, 1);
     }
-    return this.save();
+    return this.save('rule');
   }
 
   setExceptions(exceptions) {
@@ -120,7 +120,7 @@ export class OptionsState {
       return Promise.resolve();
     }
     this._data.exceptions = exceptions;
-    return this.save();
+    return this.save('exceptions');
   }
 
   // Полная замена данных (для импорта JSON)
@@ -133,6 +133,6 @@ export class OptionsState {
     this._data.domains = data.domains || {};
     this._data.rules = data.rules || [];
     this._data.exceptions = data.exceptions || [];
-    return this.save();
+    return this.save('all');
   }
 }

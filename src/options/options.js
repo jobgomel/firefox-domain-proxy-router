@@ -97,16 +97,16 @@ function switchTab(tabName) {
 // 4. РЕНДЕРЫ
 // ============================================================
 
-function renderAll() {
-	renderProxies();
-	renderDomains();
-	renderRules();
+function renderAll(section = 'all') {
+	if (section === 'all' || section === 'proxy') renderProxies();
+	if (section === 'all' || section === 'domain') renderDomains();
+	if (section === 'all' || section === 'rule') renderRules();
 	updateRuleSelects();
 }
 
 function renderProxies() {
 	const list = document.getElementById('proxy-list');
-	list.innerHTML = '';
+	list.replaceChildren();
 
 	if (Object.keys(state.proxies).length === 0) {
 		setPlaceholder(list, 'Список прокси пуст');
@@ -138,7 +138,7 @@ function renderProxies() {
 
 function renderDomains() {
 	const list = document.getElementById('domain-list');
-	list.innerHTML = '';
+	list.replaceChildren();
 
 	if (Object.keys(state.domains).length === 0) {
 		setPlaceholder(list, 'Списки масок не созданы');
@@ -166,7 +166,7 @@ function renderDomains() {
 
 function renderRules() {
 	const list = document.getElementById('rule-list');
-	list.innerHTML = '';
+	list.replaceChildren();
 
 	if (state.rules.length === 0) {
 		list.appendChild(createPlaceholder('Нет активных правил трафика'));
@@ -561,7 +561,7 @@ function createErrorElement(message, retryFn) {
 }
 
 async function fetchPublicProxies() {
-	pubListContainer.innerHTML = '';
+	pubListContainer.replaceChildren();
 	pubLoading.style.display = 'block';
 	try {
 		if (!navigator.onLine) {
@@ -625,7 +625,7 @@ function buildProxyConfigFromPublic(p) {
 }
 
 function renderPublicProxies() {
-	pubListContainer.innerHTML = '';
+	pubListContainer.replaceChildren();
 	const protoFilter = filterProto.value;
 	const geoFilter = filterGeo.value;
 
@@ -635,7 +635,7 @@ function renderPublicProxies() {
 		return true;
 	});
 
-	const limited = filtered.slice(0, 100);
+	const limited = filtered.slice(0, 50);
 
 	if (limited.length === 0) {
 		const emptyDiv = document.createElement('div');
