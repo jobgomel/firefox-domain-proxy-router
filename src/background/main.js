@@ -63,5 +63,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
             });
             
         return true; // Держит порт открытым для асинхронного ответа
+    } else {
+        sendResponse({ error: 'unknown action' });
     }
 });
