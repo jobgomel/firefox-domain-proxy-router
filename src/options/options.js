@@ -1,7 +1,6 @@
-let appState = { proxies: {}, domains: {}, rules: [], exceptions: [] };
-let editingProxyId = null;
-let editingDomainId = null;
-let currentTab = 'proxies'; // Активная вкладка по умолчанию
+import { OptionsState } from './state.js';
+
+const state = new OptionsState(renderAll);
 
 const genId = () => '_' + Math.random().toString(36).substr(2, 9);
 
@@ -34,15 +33,10 @@ function setSelectPlaceholder(el, text) {
 
 // Инициализация данных, темы и вкладки
 async function loadData() {
-	const res = await browser.storage.local.get(['proxies', 'domains', 'rules', 'exceptions', 'theme', 'activeTab']);
-	appState.proxies = res.proxies || {};
-	appState.domains = res.domains || {};
-	appState.rules = res.rules || [];
-	appState.exceptions = res.exceptions || []; // <-- Загружаем массив
-	currentTab = res.activeTab || 'proxies';
+	const { theme } = await state.load();
 
 	// Инициализация темы
-	if (res.theme === 'dark') {
+	if (theme === 'dark') {
 		document.body.classList.add('dark');
 		setThemeToggle(true);
 	} else {
@@ -50,21 +44,8 @@ async function loadData() {
 		setThemeToggle(false);
 	}
 
-	// Заполняем поле исключений текстом (каждая маска с новой строки)
-	document.getElementById('ex-domains').value = appState.exceptions.join('\n');
-
-	// Инициализация вкладок
-	switchTab(currentTab);
-	renderAll();
-}
-
-async function saveData() {
-	await browser.storage.local.set({
-		proxies: appState.proxies,
-		domains: appState.domains,
-		rules: appState.rules,
-		exceptions: appState.exceptions
-	});
+	document.getElementById('ex-domains').value = state.exceptions.join('\n');
+	switchTab(state.currentTab);
 	renderAll();
 }
 
@@ -98,24 +79,12 @@ document.querySelectorAll('.tab-btn').forEach(button => {
 });
 
 function switchTab(tabName) {
-	currentTab = tabName;
-
-	// Переключаем активные кнопки
+	state.currentTab = tabName;
 	document.querySelectorAll('.tab-btn').forEach(btn => {
-		if (btn.getAttribute('data-tab') === tabName) {
-			btn.classList.add('active');
-		} else {
-			btn.classList.remove('active');
-		}
+		btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
 	});
-
-	// Скрываем/показываем контейнеры контента
 	document.querySelectorAll('.tab-content').forEach(content => {
-		if (content.id === `tab-content-${tabName}`) {
-			content.classList.add('active');
-		} else {
-			content.classList.remove('active');
-		}
+		content.classList.toggle('active', content.id === `tab-content-${tabName}`);
 	});
 }
 
@@ -130,12 +99,12 @@ function renderProxies() {
 	const list = document.getElementById('proxy-list');
 	list.innerHTML = '';
 
-	if (Object.keys(appState.proxies).length === 0) {
+	if (Object.keys(state.proxies).length === 0) {
 		setPlaceholder(list, 'Список прокси пуст');
 		return;
 	}
 
-	for (const [id, p] of Object.entries(appState.proxies)) {
+	for (const [id, p] of Object.entries(state.proxies)) {
 		if (!p) continue;
 
 		const row = document.createElement('div');
@@ -197,12 +166,12 @@ function renderDomains() {
 	const list = document.getElementById('domain-list');
 	list.innerHTML = '';
 
-	if (Object.keys(appState.domains).length === 0) {
+	if (Object.keys(state.domains).length === 0) {
 		setPlaceholder(list, 'Списки масок не созданы');
 		return;
 	}
 
-	for (const [id, d] of Object.entries(appState.domains)) {
+	for (const [id, d] of Object.entries(state.domains)) {
 		if (!d) continue;
 		let listArray = Array.isArray(d.list) ? d.list : (Array.isArray(d) ? d : []);
 
@@ -249,8 +218,7 @@ function renderRules() {
 	const list = document.getElementById('rule-list');
 	list.innerHTML = ''; // Очистка статического/пустого содержимого через innerHTML разрешена
 
-	if (appState.rules.length === 0) {
-		// Безопасное добавление заглушки без innerHTML
+	if (state.rules.length === 0) {
 		const emptyDiv = document.createElement('div');
 		emptyDiv.style.color = 'var(--text-muted)';
 		emptyDiv.style.fontSize = '0.875rem';
@@ -259,10 +227,10 @@ function renderRules() {
 		return;
 	}
 
-	appState.rules.forEach((r, index) => {
+	state.rules.forEach((r, index) => {
 		if (!r) return;
-		const dName = appState.domains[r.domainListId]?.name || "Удаленный список";
-		const pName = appState.proxies[r.proxyId]?.name || "Удаленный прокси";
+		const dName = state.domains[r.domainListId]?.name || "Удаленный список";
+		const pName = state.proxies[r.proxyId]?.name || "Удаленный прокси";
 
 		const row = document.createElement('div');
 		row.className = 'card-row';
@@ -319,16 +287,16 @@ function updateRuleSelects() {
 	rDomain.innerHTML = '';
 	rProxy.innerHTML = '';
 
-	const activeDomainIds = appState.rules.map(rule => rule.domainListId);
+	const activeDomainIds = state.rules.map(rule => rule.domainListId);
 
-	const availableDomains = Object.entries(appState.domains).filter(([id, d]) => {
+	const availableDomains = Object.entries(state.domains).filter(([id, d]) => {
 		return d && !activeDomainIds.includes(id);
 	});
 
 	if (availableDomains.length === 0) {
 		const opt = document.createElement('option');
 		opt.value = "";
-		opt.textContent = Object.keys(appState.domains).length === 0
+		opt.textContent = Object.keys(state.domains).length === 0
 			? '-- Сначала добавьте список масок --'
 			: '-- Все списки масок уже активированы --';
 		rDomain.appendChild(opt);
@@ -341,10 +309,10 @@ function updateRuleSelects() {
 		}
 	}
 
-	if (Object.keys(appState.proxies).length === 0) {
+	if (Object.keys(state.proxies).length === 0) {
 		setSelectPlaceholder(rProxy, '-- Сначала добавьте прокси --');
 	} else {
-		for (const [id, p] of Object.entries(appState.proxies)) {
+		for (const [id, p] of Object.entries(state.proxies)) {
 			if (!p) continue;
 			const opt = document.createElement('option');
 			opt.value = id;
@@ -359,22 +327,25 @@ document.getElementById('btn-add-proxy').onclick = () => {
 	const port = document.getElementById('p-port').value.trim();
 	if (!host || !port) return alert('Заполните поля Host и Port');
 
-	const targetId = editingProxyId ? editingProxyId : genId();
-	appState.proxies[targetId] = {
+	const targetId = state.editingProxyId || genId();
+	const config = {
 		name: document.getElementById('p-name').value.trim() || 'Proxy',
 		type: document.getElementById('p-type').value,
-		host: host,
-		port: port,
+		host,
+		port,
 		username: document.getElementById('p-user').value.trim() || null,
-		password: document.getElementById('p-pass').value.trim() || null
+		password: document.getElementById('p-pass').value.trim() || null,
 	};
-	saveData();
-	resetProxyForm();
+	if (state.editingProxyId) {
+		state.updateProxy(targetId, config).then(resetProxyForm);
+	} else {
+		state.addProxy(targetId, config).then(resetProxyForm);
+	}
 };
 
 function startEditProxy(id) {
-	editingProxyId = id;
-	const p = appState.proxies[id];
+	state.editingProxyId = id;
+	const p = state.proxies[id];
 	document.getElementById('p-name').value = p.name;
 	document.getElementById('p-type').value = p.type;
 	document.getElementById('p-host').value = p.host;
@@ -386,7 +357,7 @@ function startEditProxy(id) {
 }
 
 function resetProxyForm() {
-	editingProxyId = null;
+	state.editingProxyId = null;
 	document.getElementById('p-name').value = '';
 	document.getElementById('p-host').value = '';
 	document.getElementById('p-port').value = '';
@@ -404,19 +375,21 @@ document.getElementById('btn-add-domain').onclick = () => {
 
 	const parsedList = rawDomains.split('\n').map(line => line.trim()).filter(line => line.length > 0);
 
-	const targetId = editingDomainId ? editingDomainId : genId();
-	appState.domains[targetId] = {
+	const targetId = state.editingDomainId || genId();
+	const data = {
 		name: nameInput || 'Список Масок',
-		list: parsedList
+		list: parsedList,
 	};
-
-	saveData();
-	resetDomainForm();
+	if (state.editingDomainId) {
+		state.updateDomain(targetId, data).then(resetDomainForm);
+	} else {
+		state.addDomain(targetId, data).then(resetDomainForm);
+	}
 };
 
 function startEditDomain(id) {
-	editingDomainId = id;
-	const d = appState.domains[id];
+	state.editingDomainId = id;
+	const d = state.domains[id];
 	let listArray = Array.isArray(d.list) ? d.list : (Array.isArray(d) ? d : []);
 
 	document.getElementById('d-name').value = d.name || '';
@@ -427,7 +400,7 @@ function startEditDomain(id) {
 }
 
 function resetDomainForm() {
-	editingDomainId = null;
+	state.editingDomainId = null;
 	document.getElementById('d-name').value = '';
 	document.getElementById('d-domains').value = '';
 	document.getElementById('btn-add-domain').textContent = 'Добавить список';
@@ -443,30 +416,25 @@ document.getElementById('btn-add-rule').onclick = () => {
 		return alert('Пожалуйста, выберите существующий список масок и прокси-сервер для создания правила.');
 	}
 
-	appState.rules.push({ domainListId, proxyId });
-	saveData();
+	state.addRule({ domainListId, proxyId });
 };
 
 function deleteItem(type, id) {
-	delete appState[type][id];
-	if (type === 'domains') {
-		appState.rules = appState.rules.filter(r => r.domainListId !== id);
-		if (editingDomainId === id) resetDomainForm();
-	}
 	if (type === 'proxies') {
-		appState.rules = appState.rules.filter(r => r.proxyId !== id);
-		if (editingProxyId === id) resetProxyForm();
+		if (state.editingProxyId === id) resetProxyForm();
+		state.deleteProxy(id);
+	} else if (type === 'domains') {
+		if (state.editingDomainId === id) resetDomainForm();
+		state.deleteDomain(id);
 	}
-	saveData();
 }
 
 function deleteRule(index) {
-	appState.rules.splice(index, 1);
-	saveData();
+	state.deleteRule(index);
 }
 
 async function testProxy(id) {
-	const proxy = appState.proxies[id];
+	const proxy = state.proxies[id];
 	const statusEl = document.getElementById(`status-${id}`);
 	statusEl.textContent = "⌛ Ждем...";
 	statusEl.style.color = "orange";
@@ -536,10 +504,7 @@ document.getElementById('btn-save-exceptions').onclick = async () => {
 		.map(line => line.trim())
 		.filter(line => line.length > 0);
 
-	appState.exceptions = parsedExceptions;
-
-	// Сохраняем в локальное хранилище расширения
-	await browser.storage.local.set({ exceptions: appState.exceptions });
+	await state.setExceptions(parsedExceptions);
 
 	// Визуальный фидбек для пользователя (кнопка на секунду позеленеет)
 	const saveBtn = document.getElementById('btn-save-exceptions');
@@ -557,13 +522,12 @@ document.getElementById('btn-save-exceptions').onclick = async () => {
 
 // Экспорт в JSON
 document.getElementById('btn-export-settings').onclick = () => {
-	// Формируем объект резервной копии на основе текущего appState
 	const backupData = {
 		version: "1.0",
-		proxies: appState.proxies,
-		domains: appState.domains,
-		rules: appState.rules,
-		exceptions: appState.exceptions
+		proxies: state.proxies,
+		domains: state.domains,
+		rules: state.rules,
+		exceptions: state.exceptions,
 	};
 
 	const jsonString = JSON.stringify(backupData, null, 2);
@@ -618,30 +582,8 @@ importBtn.onclick = () => {
 		try {
 			const importedData = JSON.parse(event.target.result);
 
-			// Валидация структуры (проверяем, что это вообще наш файл)
-			if (!importedData || (typeof importedData !== 'object')) {
-				throw new Error('Неверный формат JSON');
-			}
-
-			// Накатываем данные, подстраховываясь дефолтными значениями
-			appState.proxies = importedData.proxies || {};
-			appState.domains = importedData.domains || {};
-			appState.rules = importedData.rules || [];
-			appState.exceptions = importedData.exceptions || [];
-
-			// Сохраняем всё в браузерное хранилище storage.local
-			await browser.storage.local.set({
-				proxies: appState.proxies,
-				domains: appState.domains,
-				rules: appState.rules,
-				exceptions: appState.exceptions
-			});
-
-			// Обновляем текстовое поле исключений на соответствующей вкладке
-			document.getElementById('ex-domains').value = appState.exceptions.join('\n');
-
-			// Перерисовываем интерфейс
-			renderAll();
+			await state.replaceAll(importedData);
+			document.getElementById('ex-domains').value = state.exceptions.join('\n');
 
 			// Сбрасываем состояние элементов импорта
 			fileInput.value = '';
@@ -851,8 +793,7 @@ function renderPublicProxies() {
 		// --- ЛОГИКА ДОБАВЛЕНИЯ ---
 		btnAdd.onclick = () => {
 			const newId = genId();
-			appState.proxies[newId] = proxyConfig;
-			saveData(); // Сохраняем в state расширения
+			state.addProxy(newId, proxyConfig);
 
 			btnAdd.textContent = '✓ Добавлено';
 			btnAdd.style.backgroundColor = 'var(--text-success)';
