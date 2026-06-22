@@ -63,6 +63,21 @@
         .badge-noauth { background: var(--border); color: var(--text-muted); }
         .controls-wrapper { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end; }
         .status-text { font-size: 0.8rem; font-weight: 600; }
+
+        /* Прокручиваемые списки с градиентом-подсказкой */
+        .scroll-section { position: relative; }
+        .scroll-section > .item-list { max-height: 385px; overflow-y: auto; }
+        .scroll-section::after {
+            content: '';
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            right: 1.5rem;
+            height: 48px;
+            background: linear-gradient(to bottom, transparent, var(--bg-card));
+            pointer-events: none;
+            border-radius: 0 0 0.7rem 0.7rem;
+        }
     </style>
 </head>
 <body>
@@ -222,12 +237,12 @@
                 </section>
             </div>
             <div class="lists-column">
-                <section>
+                <section class="scroll-section">
                     <h3>Активные правила проксирования</h3>
                     <div id="rule-list" class="item-list"></div>
                 </section>
 
-                <section>
+                <section class="scroll-section">
                     <h3>Списки доменов / путей</h3>
                     <div id="domain-list" class="item-list"></div>
                 </section>
