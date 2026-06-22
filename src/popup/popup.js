@@ -98,6 +98,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.close();
     };
 
+    /**
+     * Обновляет статус-бар в popup.
+     * Использует HTML-элементы: #status-icon, #status-label, #status-card
+     * @param {boolean} active — true = прокси включён
+     */
     function updateStatusText(active) {
         statusIcon.classList.toggle('disable', !active);
         statusText.textContent = active
@@ -106,6 +111,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         statusCard.classList.toggle('active', active);
     }
 
+    /**
+     * Обновляет описание режима маршрутизации.
+     * Использует HTML-элемент: #mode-desc
+     * @param {string} mode — 'global' или 'tab'
+     */
     function updateDescription(mode) {
         if (mode === 'global') {
             modeDesc.textContent = "Проксируются любые запросы из любых вкладок, если они совпали со списками.";

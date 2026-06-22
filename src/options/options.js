@@ -1,6 +1,7 @@
 import { OptionsState } from './state.js';
 import { testProxy } from '../shared/testProxy.js';
 import { applyI18n } from '../shared/i18n.js';
+import { createCardRow, createCardInfo, createCardTitle, createCardSub, createControlsWrapper, createStatusSpan, createButton, createBadge, createPlaceholder } from './helpers.js';
 
 const state = new OptionsState(renderAll);
 
@@ -33,11 +34,14 @@ function setSelectPlaceholder(el, text) {
 	el.replaceChildren(opt);
 }
 
+// ============================================================
+// 3. ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+
 // Инициализация данных, темы и вкладки
 async function loadData() {
 	const { theme } = await state.load();
 
-	// Инициализация темы
 	if (theme === 'dark') {
 		document.body.classList.add('dark');
 		setThemeToggle(true);
@@ -83,6 +87,10 @@ function switchTab(tabName) {
 	});
 }
 
+// ============================================================
+// 4. РЕНДЕРЫ
+// ============================================================
+
 function renderAll() {
 	renderProxies();
 	renderDomains();
@@ -102,55 +110,20 @@ function renderProxies() {
 	for (const [id, p] of Object.entries(state.proxies)) {
 		if (!p) continue;
 
-		const row = document.createElement('div');
-		row.className = 'card-row';
-
-		const info = document.createElement('div');
-		info.className = 'card-info';
-
-		const title = document.createElement('span');
-		title.className = 'card-title';
-		title.textContent = p.name || 'Proxy';
-
-		const badge = document.createElement('span');
-		badge.className = `badge ${p.username ? 'badge-auth' : 'badge-noauth'}`;
-		badge.textContent = p.username ? 'с авторизацией' : 'открытый';
+		const title = createCardTitle(p.name || 'Proxy');
+		const badge = createBadge(p.username ? 'с авторизацией' : 'открытый', !!p.username);
 		title.appendChild(badge);
 
-		const sub = document.createElement('span');
-		sub.className = 'card-sub';
-		sub.textContent = `${p.type.toUpperCase()} -> ${p.host}:${p.port}`;
+		const sub = createCardSub(`${p.type.toUpperCase()} -> ${p.host}:${p.port}`);
+		const info = createCardInfo(title, sub);
 
-		info.appendChild(title);
-		info.appendChild(sub);
+		const controls = createControlsWrapper();
+		controls.appendChild(createStatusSpan(id));
+		controls.appendChild(createButton('Тест', 'btn-test', () => testProxyById(id)));
+		controls.appendChild(createButton('Ред.', 'btn-edit', () => startEditProxy(id)));
+		controls.appendChild(createButton('Удалить', 'btn-del', () => deleteItem('proxies', id)));
 
-		const controls = document.createElement('div');
-		controls.className = 'controls-wrapper';
-
-		const statusSpan = document.createElement('span');
-		statusSpan.id = `status-${id}`;
-		statusSpan.className = 'status-text';
-
-		const testBtn = document.createElement('button');
-		testBtn.className = 'btn-test';
-		testBtn.textContent = 'Тест';
-		testBtn.addEventListener('click', () => testProxyById(id));
-
-		const editBtn = document.createElement('button');
-		editBtn.className = 'btn-edit';
-		editBtn.textContent = 'Ред.';
-		editBtn.addEventListener('click', () => startEditProxy(id));
-
-		const delBtn = document.createElement('button');
-		delBtn.className = 'btn-del';
-		delBtn.textContent = 'Удалить';
-		delBtn.addEventListener('click', () => deleteItem('proxies', id));
-
-		controls.appendChild(statusSpan);
-		controls.appendChild(testBtn);
-		controls.appendChild(editBtn);
-		controls.appendChild(delBtn);
-
+		const row = createCardRow();
 		row.appendChild(info);
 		row.appendChild(controls);
 		list.appendChild(row);
@@ -168,41 +141,17 @@ function renderDomains() {
 
 	for (const [id, d] of Object.entries(state.domains)) {
 		if (!d) continue;
-		let listArray = Array.isArray(d.list) ? d.list : (Array.isArray(d) ? d : []);
+		const listArray = Array.isArray(d.list) ? d.list : (Array.isArray(d) ? d : []);
 
-		const row = document.createElement('div');
-		row.className = 'card-row';
+		const title = createCardTitle(d.name || 'Список масок');
+		const sub = createCardSub(listArray.join(', '));
+		const info = createCardInfo(title, sub);
 
-		const info = document.createElement('div');
-		info.className = 'card-info';
+		const controls = createControlsWrapper();
+		controls.appendChild(createButton('Ред.', 'btn-edit', () => startEditDomain(id)));
+		controls.appendChild(createButton('Удалить', 'btn-del', () => deleteItem('domains', id)));
 
-		const title = document.createElement('span');
-		title.className = 'card-title';
-		title.textContent = d.name || 'Список масок';
-
-		const sub = document.createElement('span');
-		sub.className = 'card-sub';
-		sub.textContent = listArray.join(', ');
-
-		info.appendChild(title);
-		info.appendChild(sub);
-
-		const controls = document.createElement('div');
-		controls.className = 'controls-wrapper';
-
-		const editBtn = document.createElement('button');
-		editBtn.className = 'btn-edit';
-		editBtn.textContent = 'Ред.';
-		editBtn.addEventListener('click', () => startEditDomain(id));
-
-		const delBtn = document.createElement('button');
-		delBtn.className = 'btn-del';
-		delBtn.textContent = 'Удалить';
-		delBtn.addEventListener('click', () => deleteItem('domains', id));
-
-		controls.appendChild(editBtn);
-		controls.appendChild(delBtn);
-
+		const row = createCardRow();
 		row.appendChild(info);
 		row.appendChild(controls);
 		list.appendChild(row);
@@ -211,14 +160,10 @@ function renderDomains() {
 
 function renderRules() {
 	const list = document.getElementById('rule-list');
-	list.innerHTML = ''; // Очистка статического/пустого содержимого через innerHTML разрешена
+	list.innerHTML = '';
 
 	if (state.rules.length === 0) {
-		const emptyDiv = document.createElement('div');
-		emptyDiv.style.color = 'var(--text-muted)';
-		emptyDiv.style.fontSize = '0.875rem';
-		emptyDiv.textContent = 'Нет активных правил трафика';
-		list.appendChild(emptyDiv);
+		list.appendChild(createPlaceholder('Нет активных правил трафика'));
 		return;
 	}
 
@@ -227,49 +172,30 @@ function renderRules() {
 		const dName = state.domains[r.domainListId]?.name || "Удаленный список";
 		const pName = state.proxies[r.proxyId]?.name || "Удаленный прокси";
 
-		const row = document.createElement('div');
-		row.className = 'card-row';
-
-		const info = document.createElement('div');
-		info.className = 'card-info';
-
-		// --- БЕЗОПАСНЫЙ СБОР ТИТУЛА ---
+		// Собираем title из нескольких частей (безопасно, без innerHTML)
 		const title = document.createElement('span');
 		title.className = 'card-title';
-
-		// Добавляем статическую текстовую часть
-		const titleText = document.createTextNode('Если подходит под маски ');
-		title.appendChild(titleText);
-
-		// Создаем стилизованный span для имени домена
+		title.appendChild(document.createTextNode('Если подходит под маски '));
 		const domainSpan = document.createElement('span');
 		domainSpan.style.color = 'var(--primary)';
-		domainSpan.textContent = `[${dName}]`; // textContent экранирует любые спецсимволы и теги
+		domainSpan.textContent = `[${dName}]`;
 		title.appendChild(domainSpan);
 
-		// --- БЕЗОПАСНЫЙ СБОР ПОДЗАГОЛОВКА ---
+		// Собираем sub из нескольких частей
 		const sub = document.createElement('span');
 		sub.className = 'card-sub';
-
-		const subText = document.createTextNode('Направлять через прокси: ');
-		sub.appendChild(subText);
-
-		// Создаем жирный элемент для имени прокси
+		sub.appendChild(document.createTextNode('Направлять через прокси: '));
 		const proxyBold = document.createElement('b');
-		proxyBold.textContent = pName; // Безопасное присвоение
+		proxyBold.textContent = pName;
 		sub.appendChild(proxyBold);
 
-		// Собираем структуру воедино
-		info.appendChild(title);
-		info.appendChild(sub);
+		const info = createCardInfo(title, sub);
+		const controls = createControlsWrapper();
+		controls.appendChild(createButton('Отключить', 'btn-del', () => deleteRule(index)));
 
-		const delBtn = document.createElement('button');
-		delBtn.className = 'btn-del';
-		delBtn.textContent = 'Отключить';
-		delBtn.addEventListener('click', () => deleteRule(index));
-
+		const row = createCardRow();
 		row.appendChild(info);
-		row.appendChild(delBtn);
+		row.appendChild(controls);
 		list.appendChild(row);
 	});
 }
@@ -316,6 +242,10 @@ function updateRuleSelects() {
 		}
 	}
 }
+
+// ============================================================
+// 5. ФОРМЫ И ЭКШЕНЫ
+// ============================================================
 
 document.getElementById('btn-add-proxy').onclick = () => {
 	const host = document.getElementById('p-host').value.trim();
@@ -436,14 +366,14 @@ function testProxyById(id) {
 	testProxy(proxy, statusEl);
 }
 
-loadData();
+// ============================================================
+// 6. ОБРАБОТЧИКИ СОБЫТИЙ (парсинг, исключения, экспорт, импорт)
+// ============================================================
 
 // Автоматический парсинг быстрых ссылок при вставке в поле Host
 document.getElementById('p-host').addEventListener('input', function(e) {
 	const value = e.target.value.trim();
 
-	// Регулярное выражение для разбора форматов:
-	// protocol://[user:pass@]host:port
 	const proxyRegex = /^(socks5|http):\/\/(?:([^:]+):([^@]+)@)?([^:]+):(\d+)$/i;
 
 	const match = value.match(proxyRegex);
@@ -451,16 +381,10 @@ document.getElementById('p-host').addEventListener('input', function(e) {
 	if (match) {
 		const [full, protocol, user, pass, host, port] = match;
 
-		// 1. Устанавливаем тип (приводим socks5 к socks для соответствия нашему select)
 		document.getElementById('p-type').value = protocol.toLowerCase().startsWith('socks') ? 'socks' : 'http';
-
-		// 2. Устанавливаем хост
 		document.getElementById('p-host').value = host;
-
-		// 3. Устанавливаем порт
 		document.getElementById('p-port').value = port;
 
-		// 4. Заполняем логин и пароль, если они есть
 		if (user && pass) {
 			document.getElementById('p-user').value = decodeURIComponent(user);
 			document.getElementById('p-pass').value = decodeURIComponent(pass);
@@ -481,7 +405,6 @@ document.getElementById('p-host').addEventListener('input', function(e) {
 document.getElementById('btn-save-exceptions').onclick = async () => {
 	const rawExceptions = document.getElementById('ex-domains').value.trim();
 
-	// Превращаем текст в массив чистых строк
 	const parsedExceptions = rawExceptions
 		.split('\n')
 		.map(line => line.trim())
@@ -517,14 +440,12 @@ document.getElementById('btn-export-settings').onclick = () => {
 	const blob = new Blob([jsonString], { type: 'application/json' });
 	const url = URL.createObjectURL(blob);
 
-	// Создаем временную ссылку для скачивания файла
 	const link = document.createElement('a');
 	link.href = url;
 	link.download = `proxy_router_backup_${new Date().toISOString().slice(0,10)}.json`;
 	document.body.appendChild(link);
 	link.click();
 
-	// Очистка памяти
 	document.body.removeChild(link);
 	URL.revokeObjectURL(url);
 };
@@ -543,7 +464,7 @@ fileInput.onchange = (e) => {
 		statusDiv.replaceChildren();
 		statusDiv.appendChild(document.createTextNode(`Выбран файл: ${file.name}`));
 		statusDiv.style.color = 'var(--text-main)';
-		importBtn.style.display = 'inline-flex'; // Показываем опасную кнопку подтверждения
+		importBtn.style.display = 'inline-flex';
 	} else {
 		statusDiv.textContent = 'Файл не выбран';
 		statusDiv.style.color = 'var(--text-muted)';
@@ -568,7 +489,6 @@ importBtn.onclick = () => {
 			await state.replaceAll(importedData);
 			document.getElementById('ex-domains').value = state.exceptions.join('\n');
 
-			// Сбрасываем состояние элементов импорта
 			fileInput.value = '';
 			importBtn.style.display = 'none';
 			statusDiv.textContent = '✅ Настройки успешно импортированы!';
@@ -583,11 +503,11 @@ importBtn.onclick = () => {
 	reader.readAsText(file);
 };
 
-// ==========================================
-// ЛОГИКА ПУБЛИЧНЫХ ПРОКСИ (IMPORT)
-// ==========================================
+// ============================================================
+// 7. ПУБЛИЧНЫЕ ПРОКСИ
+// ============================================================
 
-let publicProxiesData = []; // Кэш загруженных данных
+let publicProxiesData = [];
 
 const btnOpenPub = document.getElementById('btn-open-public-proxies');
 const modalPub = document.getElementById('public-proxies-modal');
@@ -598,7 +518,6 @@ const filterGeo = document.getElementById('pub-filter-geo');
 const pubListContainer = document.getElementById('pub-proxy-list');
 const pubLoading = document.getElementById('pub-loading');
 
-// Открытие модального окна
 btnOpenPub.addEventListener('click', () => {
 	modalPub.style.display = 'block';
 	if (publicProxiesData.length === 0) {
@@ -606,11 +525,10 @@ btnOpenPub.addEventListener('click', () => {
 	}
 });
 
-// Закрытие модального окна
 btnClosePub.addEventListener('click', () => {
 	modalPub.style.display = 'none';
 });
-// Закрытие по клику вне окна
+
 modalPub.addEventListener('click', (e) => {
 	if (e.target === modalPub) modalPub.style.display = 'none';
 });
@@ -629,7 +547,6 @@ async function fetchPublicProxies() {
 		const data = await res.json();
 		publicProxiesData = data;
 
-		// Извлекаем уникальные протоколы и страны для фильтров
 		const protocols = new Set();
 		const countries = new Set();
 
@@ -652,12 +569,10 @@ async function fetchPublicProxies() {
 	}
 }
 
-// Заполнение выпадающих списков фильтра
 function populateSelect(selectEl, setValues, defaultText) {
 	const currentVal = selectEl.value;
 	setSelectPlaceholder(selectEl, defaultText);
 
-	// Сортируем по алфавиту для удобства
 	Array.from(setValues).sort().forEach(val => {
 		const opt = document.createElement('option');
 		opt.value = val;
@@ -665,24 +580,38 @@ function populateSelect(selectEl, setValues, defaultText) {
 		selectEl.appendChild(opt);
 	});
 
-	// Восстанавливаем выбранное значение, если оно все еще актуально
 	if (setValues.has(currentVal)) selectEl.value = currentVal;
 }
 
-// Рендер отфильтрованного списка (с кнопкой тестирования)
+function resetPublicProxyFilters() {
+	filterProto.value = '';
+	filterGeo.value = '';
+}
+
+function buildProxyConfigFromPublic(p) {
+	const extType = p.protocol.toLowerCase().includes('socks') ? 'socks' : 'http';
+	const country = p.geolocation?.country || 'Unknown';
+	return {
+		name: `Pub ${country} ${p.protocol.toUpperCase()}`,
+		type: extType,
+		host: p.ip,
+		port: p.port.toString(),
+		username: null,
+		password: null,
+	};
+}
+
 function renderPublicProxies() {
 	pubListContainer.innerHTML = '';
 	const protoFilter = filterProto.value;
 	const geoFilter = filterGeo.value;
 
-	// Фильтруем данные
 	const filtered = publicProxiesData.filter(p => {
 		if (protoFilter && p.protocol !== protoFilter) return false;
 		if (geoFilter && (!p.geolocation || p.geolocation.country !== geoFilter)) return false;
 		return true;
 	});
 
-	// Ограничиваем до 100 элементов
 	const limited = filtered.slice(0, 100);
 
 	if (limited.length === 0) {
@@ -694,87 +623,46 @@ function renderPublicProxies() {
 	}
 
 	limited.forEach(p => {
-		const row = document.createElement('div');
-		row.className = 'card-row';
-		row.style.marginBottom = '0.5rem';
-
-		const info = document.createElement('div');
-		info.className = 'card-info';
-
-		// Геолокация
 		const country = p.geolocation?.country || 'Unknown';
 		const city = p.geolocation?.city ? ` (${p.geolocation.city})` : '';
+		const proxyConfig = buildProxyConfigFromPublic(p);
 
-		info.replaceChildren();
-		const titleSpan = document.createElement('span');
-		titleSpan.className = 'card-title';
-		titleSpan.appendChild(document.createTextNode(`${p.ip}:${p.port} `));
+		const title = createCardTitle('');
+		title.appendChild(document.createTextNode(`${p.ip}:${p.port} `));
 		const badge = document.createElement('span');
 		badge.className = 'badge badge-noauth';
 		badge.style.cssText = 'background:#e0e7ff; color:#4338ca;';
 		badge.textContent = p.protocol.toUpperCase();
-		titleSpan.appendChild(badge);
+		title.appendChild(badge);
 
-		const subSpan = document.createElement('span');
-		subSpan.className = 'card-sub';
-		subSpan.textContent = `📍 ${country}${city} | Анонимность: ${p.anonymity || '-'}`;
+		const sub = createCardSub(`📍 ${country}${city} | Анонимность: ${p.anonymity || '-'}`);
+		const info = createCardInfo(title, sub);
 
-		info.appendChild(titleSpan);
-		info.appendChild(subSpan);
-
-		// Контейнер для статуса и кнопок
-		const controls = document.createElement('div');
-		controls.className = 'controls-wrapper';
-
-		const statusSpan = document.createElement('span');
-		statusSpan.className = 'status-text';
-
-		const btnTest = document.createElement('button');
-		btnTest.className = 'btn-test';
-		btnTest.textContent = 'Тест';
-
-		const btnAdd = document.createElement('button');
-		btnAdd.className = 'btn-primary';
-		btnAdd.style.fontSize = '0.75rem';
-		btnAdd.style.padding = '0.35rem 0.75rem';
-		btnAdd.textContent = 'Добавить';
-
-		// Маппинг протоколов заранее (нужен и для теста, и для добавления)
-		let extType = 'http';
-		if (p.protocol.toLowerCase().includes('socks')) extType = 'socks';
-
-		// Формируем объект прокси (как в основном state)
-		const proxyConfig = {
-			name: `Pub ${country} ${p.protocol.toUpperCase()}`,
-			type: extType,
-			host: p.ip,
-			port: p.port.toString(),
-			username: null,
-			password: null
-		};
-
-		// --- ЛОГИКА ТЕСТИРОВАНИЯ ---
-		btnTest.onclick = () => {
-			testProxy(proxyConfig, statusSpan);
-		};
-
-		// --- ЛОГИКА ДОБАВЛЕНИЯ ---
-		btnAdd.onclick = () => {
+		const controls = createControlsWrapper();
+		const statusSpan = createStatusSpan();
+		controls.appendChild(statusSpan);
+		controls.appendChild(createButton('Тест', 'btn-test', () => testProxy(proxyConfig, statusSpan)));
+		controls.appendChild(createButton('Добавить', 'btn-primary', () => {
 			const newId = genId();
 			state.addProxy(newId, proxyConfig);
+			const btn = controls.querySelector('.btn-primary');
+			if (btn) {
+				btn.textContent = '✓ Добавлено';
+				btn.style.backgroundColor = 'var(--text-success)';
+				btn.disabled = true;
+			}
+		}));
 
-			btnAdd.textContent = '✓ Добавлено';
-			btnAdd.style.backgroundColor = 'var(--text-success)';
-			btnAdd.disabled = true;
-		};
-
-		// Собираем всё вместе
-		controls.appendChild(statusSpan);
-		controls.appendChild(btnTest);
-		controls.appendChild(btnAdd);
-
+		const row = createCardRow();
+		row.style.marginBottom = '0.5rem';
 		row.appendChild(info);
 		row.appendChild(controls);
 		pubListContainer.appendChild(row);
 	});
 }
+
+// ============================================================
+// 8. BOOTSTRAP
+// ============================================================
+
+loadData();
