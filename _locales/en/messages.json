@@ -7,5 +7,14 @@
   },
   "statusDisabled": {
     "message": "Proxy disabled"
+  },
+  "statsLabel": {
+    "message": "Proxied:"
+  },
+  "statsHosts": {
+    "message": "hosts"
+  },
+  "statsEmpty": {
+    "message": "No proxied requests for this tab"
   }
 }

@@ -1,38 +1,31 @@
-import { state } from './state.js';
-import { matchRule } from './utils.js';
-import { addHostToTab, setTabIconProxied, tabUrlsCache } from './ui.js';
+import { matchRule, buildProxyResponse } from './utils.js';
+import { state as defaultState } from './state.js';
 
 // Хелпер, который проверяет, подходит ли конкретный URL под наши правила проксирования
-function isUrlMatchRules(urlObj) {
+function isUrlMatchRules(urlObj, state) {
     for (let rule of state.rules) {
         const domainData = state.domains[rule.domainListId];
         const masks = domainData ? (Array.isArray(domainData.list) ? domainData.list : []) : [];
         const proxyConfig = state.proxies[rule.proxyId];
 
         if (proxyConfig && masks.some(mask => matchRule(urlObj, mask))) {
-            return proxyConfig; // Возвращаем конфиг прокси, если совпало
+            return proxyConfig;
         }
     }
     return null;
 }
 
-export function handleProxyRequest(details) {
+export function handleProxyRequest(details, { getTabUrl, onProxyMatch } = {}, state = defaultState) {
     // 1. Если расширение выключено глобально — пускаем всё напрямую
     if (!state.isEnabled) {
         return { type: "direct" };
     }
 
     const url = new URL(details.url);
-    
+
     // 2. Проверка теста прокси
     if (state.testProxyConfig && url.hostname === 'example.com') {
-        return {
-            type: state.testProxyConfig.type,
-            host: state.testProxyConfig.host,
-            port: parseInt(state.testProxyConfig.port),
-            username: state.testProxyConfig.username || undefined,
-            password: state.testProxyConfig.password || undefined
-        };
+        return buildProxyResponse(state.testProxyConfig);
     }
 
     // 3. Проверка черного списка (Исключений)
@@ -40,59 +33,45 @@ export function handleProxyRequest(details) {
         return { type: "direct" };
     }
 
-    // --- НОВАЯ ЛОГИКА: ФИЛЬТРАЦИЯ ПО РЕЖИМУ РАБОТЫ ---
-    
-    if (state.routingMode === 'tab' && details.tabId !== -1) {
-        // Получаем URL страницы, на которой находится пользователь во вкладке
-        const currentTabUrlStr = tabUrlsCache.get(details.tabId);
-        
+    // --- ФИЛЬТРАЦИЯ ПО РЕЖИМУ РАБОТЫ ---
+
+    if (state.routingMode === 'tab') {
+        // Фоновые/системные запросы без контекста вкладки (tabId === -1) — всегда direct.
+        // В tab-mode мы не можем определить, к какой вкладке относится запрос,
+        // поэтому проксировать его по глобальным правилам было бы неочевидно.
+        if (details.tabId === -1) {
+            return { type: "direct" };
+        }
+
+        const currentTabUrlStr = getTabUrl ? getTabUrl(details.tabId) : null;
+
         if (currentTabUrlStr) {
             const currentTabUrl = new URL(currentTabUrlStr);
-            
-            // Проверяем: входит ли САМА ВКЛАДКА в списки проксирования?
-            const tabProxyConfig = isUrlMatchRules(currentTabUrl);
-            
+
+            const tabProxyConfig = isUrlMatchRules(currentTabUrl, state);
+
             if (!tabProxyConfig) {
-                // Если сама страница в браузере не из белого списка, 
-                // то любые подзапросы внутри нее (даже на proxy.com) идут НАПРЯМУЮ
                 return { type: "direct" };
             }
-            
-            // Если вкладка должна проксироваться, проверяем текущий подзапрос:
+
             // Вариант А: Подзапрос тоже в белом списке (возможно, под другой прокси)
-            const subrequestProxyConfig = isUrlMatchRules(url);
+            const subrequestProxyConfig = isUrlMatchRules(url, state);
             if (subrequestProxyConfig) {
-                if (details.tabId !== -1) { addHostToTab(details.tabId, url.hostname); setTabIconProxied(details.tabId); }
-                return {
-                    type: subrequestProxyConfig.type, host: subrequestProxyConfig.host, port: parseInt(subrequestProxyConfig.port),
-                    username: subrequestProxyConfig.username || undefined, password: subrequestProxyConfig.password || undefined
-                };
+                if (details.tabId !== -1 && onProxyMatch) onProxyMatch(details.tabId, url.hostname);
+                return buildProxyResponse(subrequestProxyConfig);
             }
-            
-            // Вариант Б: Подзапрос обычный, но мы находимся на прокси-вкладке. 
-            // Заворачиваем подзапрос в прокси этой вкладки, чтобы страница не ломалась из-за смешанного трафика.
-            if (details.tabId !== -1) { addHostToTab(details.tabId, url.hostname); setTabIconProxied(details.tabId); }
-            return {
-                type: tabProxyConfig.type, host: tabProxyConfig.host, port: parseInt(tabProxyConfig.port),
-                username: tabProxyConfig.username || undefined, password: tabProxyConfig.password || undefined
-            };
+
+            // Вариант Б: Подзапрос обычный, но мы находимся на прокси-вкладке.
+            if (details.tabId !== -1 && onProxyMatch) onProxyMatch(details.tabId, url.hostname);
+            return buildProxyResponse(tabProxyConfig);
         }
     }
 
-    // --- РЕЖИМ ГЛОБАЛЬНЫЙ (Старое поведение) ---
-    const globalProxyConfig = isUrlMatchRules(url);
+    // --- РЕЖИМ ГЛОБАЛЬНЫЙ ---
+    const globalProxyConfig = isUrlMatchRules(url, state);
     if (globalProxyConfig) {
-        if (details.tabId !== -1) {
-            addHostToTab(details.tabId, url.hostname);
-            setTabIconProxied(details.tabId);
-        }
-        return {
-            type: globalProxyConfig.type,
-            host: globalProxyConfig.host,
-            port: parseInt(globalProxyConfig.port),
-            username: globalProxyConfig.username || undefined,
-            password: globalProxyConfig.password || undefined
-        };
+        if (details.tabId !== -1 && onProxyMatch) onProxyMatch(details.tabId, url.hostname);
+        return buildProxyResponse(globalProxyConfig);
     }
 
     return { type: "direct" };

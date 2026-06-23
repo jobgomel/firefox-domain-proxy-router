@@ -1,12 +1,7 @@
+import { applyI18n } from '../shared/i18n.js';
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // Находим все элементы с атрибутом data-i18n и переводим их
-    document.querySelectorAll('[data-i18n]').forEach(element => {
-        const key = element.getAttribute('data-i18n');
-        const translation = browser.i18n.getMessage(key);
-        if (translation) {
-            element.textContent = translation;
-        }
-    });
+    applyI18n();
 
     const uiConfig = await browser.storage.local.get(['theme', 'isEnabled', 'routingMode']);
     if (uiConfig.theme === 'dark') {
@@ -103,6 +98,84 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.close();
     };
 
+    // 4. Статистика проксированных хостов в активной вкладке
+    const statsTrigger = document.getElementById('stats-trigger');
+    const statsList = document.getElementById('stats-list');
+    const statsCount = document.getElementById('stats-count');
+    const statsEmpty = document.getElementById('stats-empty');
+
+    statsTrigger.onclick = () => {
+        const isOpen = document.getElementById('proxy-stats').classList.toggle('open');
+        statsTrigger.setAttribute('aria-expanded', isOpen);
+    };
+
+    // Загружаем статистику и подключаем live-обновления
+    (async () => {
+        try {
+            const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
+            if (!activeTab || !activeTab.id) {
+                showEmptyStats();
+                return;
+            }
+
+            const port = browser.runtime.connect({ name: 'popup-stats' });
+
+            // Шлём начальный запрос — background ответит statsUpdate
+            port.postMessage({ action: 'getTabStats', tabId: activeTab.id });
+
+            // Фон будет присылать statsUpdate при каждом новом прокси-запросе
+            port.onMessage.addListener((msg) => {
+                if (msg.action === 'statsUpdate') {
+                    renderStats(msg.stats);
+                }
+            });
+
+            port.onDisconnect.addListener(() => {
+                // Popup закрылся — порт автоматом рвётся, чистить ничего не надо
+            });
+        } catch (err) {
+            console.warn('[Popup] Не удалось получить статистику:', err.message);
+            showEmptyStats();
+        }
+    })();
+
+    function renderStats(stats) {
+        if (!stats || stats.length === 0) {
+            showEmptyStats();
+            return;
+        }
+        statsCount.textContent = stats.length;
+        statsList.textContent = ''; // очищаем безопасно
+        for (const item of stats) {
+            const li = document.createElement('li');
+            li.className = 'stats-item';
+
+            const hostSpan = document.createElement('span');
+            hostSpan.className = 'stats-host';
+            hostSpan.textContent = item.hostname;
+
+            const countSpan = document.createElement('span');
+            countSpan.className = 'stats-req-count';
+            countSpan.textContent = item.count;
+
+            li.append(hostSpan, countSpan);
+            statsList.append(li);
+        }
+        statsList.style.display = '';
+        statsEmpty.style.display = 'none';
+    }
+
+    function showEmptyStats() {
+        statsCount.textContent = '0';
+        statsList.style.display = 'none';
+        statsEmpty.style.display = '';
+    }
+
+    /**
+     * Обновляет статус-бар в popup.
+     * Использует HTML-элементы: #status-icon, #status-label, #status-card
+     * @param {boolean} active — true = прокси включён
+     */
     function updateStatusText(active) {
         statusIcon.classList.toggle('disable', !active);
         statusText.textContent = active
@@ -111,6 +184,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         statusCard.classList.toggle('active', active);
     }
 
+    /**
+     * Обновляет описание режима маршрутизации.
+     * Использует HTML-элемент: #mode-desc
+     * @param {string} mode — 'global' или 'tab'
+     */
     function updateDescription(mode) {
         if (mode === 'global') {
             modeDesc.textContent = "Проксируются любые запросы из любых вкладок, если они совпали со списками.";

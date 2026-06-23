@@ -1,7 +1,7 @@
 // Кеш для скомпилированных регулярных выражений
 const regexCache = new Map();
 
-function wildcardToRegex(str) {
+export function wildcardToRegex(str) {
     if (regexCache.has(str)) return regexCache.get(str);
     
     const escaped = str.replace(/[.+^${}()|[\]\\]/g, '\\$&');
@@ -10,6 +10,10 @@ function wildcardToRegex(str) {
     regexCache.set(str, regex);
     return regex;
 }
+
+//export function resetRegexCache() {
+//    regexCache.clear();
+//}
 
 export function matchRule(urlObj, mask) {
     mask = mask.trim();
@@ -22,4 +26,14 @@ export function matchRule(urlObj, mask) {
     } else {
         return wildcardToRegex(mask).test(urlObj.hostname);
     }
+}
+
+export function buildProxyResponse(proxyConfig) {
+    return {
+        type: proxyConfig.type,
+        host: proxyConfig.host,
+        port: parseInt(proxyConfig.port),
+        username: proxyConfig.username || undefined,
+        password: proxyConfig.password || undefined
+    };
 }

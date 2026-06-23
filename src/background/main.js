@@ -1,42 +1,34 @@
 import { initStorageCache, state, setTestProxyConfig } from './state.js';
 import { handleProxyRequest } from './proxyRoute.js';
-import { resetTabHosts, registerTabUrl } from './ui.js';
+import { addHostToTab, setTabIconProxied, tabUrlsCache, resetTabHosts, registerTabUrl, restoreTabUrlsCache, getTabStats } from './ui.js';
+import { registerProxyAuthHandler } from './auth.js';
 
 // 1. Инициализируем локальный кеш при запуске скрипта
 initStorageCache();
 
-// 2. Основной слушатель прокси (теперь он быстрый и синхронный)
+// 1.1 Восстанавливаем кеш URL вкладок после (возможного) перезапуска Service Worker
+// Без этого tab-режим сломается до следующей навигации пользователем
+restoreTabUrlsCache();
+
+// 2. Основной слушатель прокси
 browser.proxy.onRequest.addListener(
-    handleProxyRequest,
+    (details) => handleProxyRequest(details, {
+        getTabUrl: (tabId) => tabUrlsCache.get(tabId),
+        onProxyMatch: (tabId, hostname) => {
+            addHostToTab(tabId, hostname);
+            setTabIconProxied(tabId);
+            // Push live-обновление в popup, если открыт
+            if (popupPort) {
+                const stats = getTabStats(tabId);
+                popupPort.postMessage({ action: 'statsUpdate', stats: stats ?? [] });
+            }
+        }
+    }, state),
     { urls: ["<all_urls>"] }
 );
 
 // 3. Обработка авторизации прокси
-browser.webRequest.onAuthRequired.addListener(
-    function(details) {
-        if (!details.isProxy) return {};
-        const proxyHost = details.challenger.host;
-        const proxyPort = details.challenger.port;
-        
-        // Авторизация для тестового прокси
-        if (state.testProxyConfig && state.testProxyConfig.host === proxyHost && parseInt(state.testProxyConfig.port) === proxyPort) {
-            return { authCredentials: { username: state.testProxyConfig.username, password: state.testProxyConfig.password } };
-        }
-
-        // Авторизация для рабочих прокси (ищем по хосту и порту)
-        for (let key in state.proxies) {
-            const authProxy = state.proxies[key];
-            if (authProxy.host === proxyHost && parseInt(authProxy.port) === proxyPort) {
-                if (authProxy.username && authProxy.password) {
-                    return { authCredentials: { username: authProxy.username, password: authProxy.password } };
-                }
-            }
-        }
-        return { cancel: true };
-    },
-    { urls: ["<all_urls>"] },
-    ["blocking"]
-);
+registerProxyAuthHandler();
 
 // 4. Очистка UI при навигации или закрытии вкладок
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => { // <-- Добавили tab сюда
@@ -53,7 +45,29 @@ browser.tabs.onRemoved.addListener((tabId) => {
     resetTabHosts(tabId);
 });
 
-// 5. Обработка клика по иконке и сообщений тестирования
+// 5. Live-статистика: порт для popup
+let popupPort = null;
+
+browser.runtime.onConnect.addListener((port) => {
+    if (port.name !== 'popup-stats') return;
+
+    popupPort = port;
+
+    port.onMessage.addListener((message) => {
+        if (message.action === 'getTabStats') {
+            const stats = getTabStats(message.tabId);
+            port.postMessage({ action: 'statsUpdate', stats: stats ?? [] });
+        }
+    });
+
+    port.onDisconnect.addListener(() => {
+        if (popupPort === port) {
+            popupPort = null;
+        }
+    });
+});
+
+// 6. Обработка клика по иконке и сообщений тестирования
 // TODO: Добавлен попап при клике на иконку, в разработке
 //browser.action.onClicked.addListener(() => {
 //    browser.runtime.openOptionsPage();
@@ -63,7 +77,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'testProxy') {
         setTestProxyConfig(message.proxy);
         const startTime = performance.now();
-        
+
         fetch('https://example.com/', { method: 'HEAD', cache: 'no-store' })
             .then(() => {
                 const endTime = performance.now();
@@ -74,7 +88,11 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 setTestProxyConfig(null);
                 sendResponse({ success: false, error: err.message });
             });
-            
+
         return true; // Держит порт открытым для асинхронного ответа
+    } else if (message.action === 'getTabStats') {
+        sendResponse({ stats: getTabStats(message.tabId) ?? [] });
+    } else {
+        sendResponse({ error: 'unknown action' });
     }
 });
