@@ -145,12 +145,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         statsCount.textContent = stats.length;
-        statsList.innerHTML = stats.map(item =>
-            `<li class="stats-item">
-                <span class="stats-host">${escapeHtml(item.hostname)}</span>
-                <span class="stats-req-count">${item.count}</span>
-            </li>`
-        ).join('');
+        statsList.textContent = ''; // очищаем безопасно
+        for (const item of stats) {
+            const li = document.createElement('li');
+            li.className = 'stats-item';
+
+            const hostSpan = document.createElement('span');
+            hostSpan.className = 'stats-host';
+            hostSpan.textContent = item.hostname;
+
+            const countSpan = document.createElement('span');
+            countSpan.className = 'stats-req-count';
+            countSpan.textContent = item.count;
+
+            li.append(hostSpan, countSpan);
+            statsList.append(li);
+        }
         statsList.style.display = '';
         statsEmpty.style.display = 'none';
     }
@@ -159,12 +169,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         statsCount.textContent = '0';
         statsList.style.display = 'none';
         statsEmpty.style.display = '';
-    }
-
-    function escapeHtml(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
     }
 
     /**
