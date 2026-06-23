@@ -2,7 +2,8 @@ export const tabUrlsCache = new Map(); // Кеш для хранения URL с�
 
 const actionAPI = browser.action || browser.browserAction;
 
-// Кеш уникальных хостов для бейджей. 
+// Кеш уникальных хостов для бейджей.
+// Map<tabId, Map<hostname, { count, lastSeen }>> — считаем запросы на хост.
 // При перезапуске Service Worker (в MV3) он очистится, но для бейджей это не критично.
 const tabHostsCache = new Map();
 
@@ -10,23 +11,44 @@ export async function addHostToTab(tabId, hostname) {
     if (tabId === -1) return;
 
     if (!tabHostsCache.has(tabId)) {
-        tabHostsCache.set(tabId, new Set());
+        tabHostsCache.set(tabId, new Map());
     }
-    
-    const hostsSet = tabHostsCache.get(tabId);
-    hostsSet.add(hostname);
-    
+
+    const hostsMap = tabHostsCache.get(tabId);
+    const entry = hostsMap.get(hostname);
+    if (entry) {
+        entry.count++;
+        entry.lastSeen = Date.now();
+    } else {
+        hostsMap.set(hostname, { count: 1, lastSeen: Date.now() });
+    }
+
     // Оборачиваем работу с вкладкой в try/catch, чтобы защитить от "Invalid tab ID"
     try {
-        await actionAPI.setBadgeText({ 
-            tabId: tabId, 
-            text: hostsSet.size.toString() 
+        await actionAPI.setBadgeText({
+            tabId: tabId,
+            text: hostsMap.size.toString()
         });
         await actionAPI.setBadgeBackgroundColor({ tabId: tabId, color: "#4f46e5" });
     } catch (err) {
         // Игнорируем ошибку, так как вкладка, скорее всего, закрылась или обновилась в процессе
         console.warn(`[UI Cache] Не удалось обновить бейдж для вкладки ${tabId}: ${err.message}`);
     }
+}
+
+/**
+ * Возвращает статистику проксированных хостов для указанной вкладки.
+ * @param {number} tabId
+ * @returns {Array<{hostname: string, count: number, lastSeen: number}> | null}
+ */
+export function getTabStats(tabId) {
+    const hostsMap = tabHostsCache.get(tabId);
+    if (!hostsMap || hostsMap.size === 0) return null;
+    return Array.from(hostsMap.entries()).map(([hostname, data]) => ({
+        hostname,
+        count: data.count,
+        lastSeen: data.lastSeen
+    }));
 }
 
 export async function resetTabHosts(tabId) {

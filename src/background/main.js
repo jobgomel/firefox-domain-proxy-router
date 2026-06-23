@@ -1,6 +1,6 @@
 import { initStorageCache, state, setTestProxyConfig } from './state.js';
 import { handleProxyRequest } from './proxyRoute.js';
-import { addHostToTab, setTabIconProxied, tabUrlsCache, resetTabHosts, registerTabUrl, restoreTabUrlsCache } from './ui.js';
+import { addHostToTab, setTabIconProxied, tabUrlsCache, resetTabHosts, registerTabUrl, restoreTabUrlsCache, getTabStats } from './ui.js';
 import { registerProxyAuthHandler } from './auth.js';
 
 // 1. Инициализируем локальный кеш при запуске скрипта
@@ -50,7 +50,7 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'testProxy') {
         setTestProxyConfig(message.proxy);
         const startTime = performance.now();
-        
+
         fetch('https://example.com/', { method: 'HEAD', cache: 'no-store' })
             .then(() => {
                 const endTime = performance.now();
@@ -61,8 +61,10 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 setTestProxyConfig(null);
                 sendResponse({ success: false, error: err.message });
             });
-            
+
         return true; // Держит порт открытым для асинхронного ответа
+    } else if (message.action === 'getTabStats') {
+        sendResponse({ stats: getTabStats(message.tabId) ?? [] });
     } else {
         sendResponse({ error: 'unknown action' });
     }

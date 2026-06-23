@@ -98,6 +98,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.close();
     };
 
+    // 4. Статистика проксированных хостов в активной вкладке
+    const statsTrigger = document.getElementById('stats-trigger');
+    const statsList = document.getElementById('stats-list');
+    const statsCount = document.getElementById('stats-count');
+    const statsEmpty = document.getElementById('stats-empty');
+
+    statsTrigger.onclick = () => {
+        const isOpen = document.getElementById('proxy-stats').classList.toggle('open');
+        statsTrigger.setAttribute('aria-expanded', isOpen);
+    };
+
+    // Загружаем статистику при открытии popup
+    (async () => {
+        try {
+            const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
+            if (!activeTab || !activeTab.id) {
+                showEmptyStats();
+                return;
+            }
+            const response = await browser.runtime.sendMessage({
+                action: 'getTabStats',
+                tabId: activeTab.id
+            });
+            renderStats(response.stats);
+        } catch (err) {
+            console.warn('[Popup] Не удалось получить статистику:', err.message);
+            showEmptyStats();
+        }
+    })();
+
+    function renderStats(stats) {
+        if (!stats || stats.length === 0) {
+            showEmptyStats();
+            return;
+        }
+        statsCount.textContent = stats.length;
+        statsList.innerHTML = stats.map(item =>
+            `<li class="stats-item">
+                <span class="stats-host">${escapeHtml(item.hostname)}</span>
+                <span class="stats-req-count">${item.count}</span>
+            </li>`
+        ).join('');
+        statsList.style.display = '';
+        statsEmpty.style.display = 'none';
+    }
+
+    function showEmptyStats() {
+        statsCount.textContent = '0';
+        statsList.style.display = 'none';
+        statsEmpty.style.display = '';
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     /**
      * Обновляет статус-бар в popup.
      * Использует HTML-элементы: #status-icon, #status-label, #status-card

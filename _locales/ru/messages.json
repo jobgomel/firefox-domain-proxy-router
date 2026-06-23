@@ -7,5 +7,14 @@
   },
   "statusDisabled": {
     "message": "Прокси отключен"
+  },
+  "statsLabel": {
+    "message": "Проксировано:"
+  },
+  "statsHosts": {
+    "message": "хостов"
+  },
+  "statsEmpty": {
+    "message": "Нет проксированных запросов для этой вкладки"
   }
 }
