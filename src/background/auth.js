@@ -1,7 +1,7 @@
 import { state } from './state.js';
 
 function handleProxyAuth(details) {
-    if (!details.isProxy) return { cancel: true };
+    if (!details.isProxy) return {};
     const proxyHost = details.challenger.host;
     const proxyPort = details.challenger.port;
 
