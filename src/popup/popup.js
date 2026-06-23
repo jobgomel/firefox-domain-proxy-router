@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         statsTrigger.setAttribute('aria-expanded', isOpen);
     };
 
-    // Загружаем статистику при открытии popup
+    // Загружаем статистику и подключаем live-обновления
     (async () => {
         try {
             const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
@@ -117,11 +117,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showEmptyStats();
                 return;
             }
-            const response = await browser.runtime.sendMessage({
-                action: 'getTabStats',
-                tabId: activeTab.id
+
+            const port = browser.runtime.connect({ name: 'popup-stats' });
+
+            // Шлём начальный запрос — background ответит statsUpdate
+            port.postMessage({ action: 'getTabStats', tabId: activeTab.id });
+
+            // Фон будет присылать statsUpdate при каждом новом прокси-запросе
+            port.onMessage.addListener((msg) => {
+                if (msg.action === 'statsUpdate') {
+                    renderStats(msg.stats);
+                }
             });
-            renderStats(response.stats);
+
+            port.onDisconnect.addListener(() => {
+                // Popup закрылся — порт автоматом рвётся, чистить ничего не надо
+            });
         } catch (err) {
             console.warn('[Popup] Не удалось получить статистику:', err.message);
             showEmptyStats();

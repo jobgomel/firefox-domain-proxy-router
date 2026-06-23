@@ -17,6 +17,11 @@ browser.proxy.onRequest.addListener(
         onProxyMatch: (tabId, hostname) => {
             addHostToTab(tabId, hostname);
             setTabIconProxied(tabId);
+            // Push live-обновление в popup, если открыт
+            if (popupPort) {
+                const stats = getTabStats(tabId);
+                popupPort.postMessage({ action: 'statsUpdate', stats: stats ?? [] });
+            }
         }
     }, state),
     { urls: ["<all_urls>"] }
@@ -40,7 +45,29 @@ browser.tabs.onRemoved.addListener((tabId) => {
     resetTabHosts(tabId);
 });
 
-// 5. Обработка клика по иконке и сообщений тестирования
+// 5. Live-статистика: порт для popup
+let popupPort = null;
+
+browser.runtime.onConnect.addListener((port) => {
+    if (port.name !== 'popup-stats') return;
+
+    popupPort = port;
+
+    port.onMessage.addListener((message) => {
+        if (message.action === 'getTabStats') {
+            const stats = getTabStats(message.tabId);
+            port.postMessage({ action: 'statsUpdate', stats: stats ?? [] });
+        }
+    });
+
+    port.onDisconnect.addListener(() => {
+        if (popupPort === port) {
+            popupPort = null;
+        }
+    });
+});
+
+// 6. Обработка клика по иконке и сообщений тестирования
 // TODO: Добавлен попап при клике на иконку, в разработке
 //browser.action.onClicked.addListener(() => {
 //    browser.runtime.openOptionsPage();
