@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extensionName__", 
   "default_locale": "en",
-  "version": "4.3.1",
+  "version": "4.3.2",
   "description": "Универсальный прокси-маршрутизатор, заворачивает определенные домены в выбранные прокси",
   "permissions": [
     "proxy",
