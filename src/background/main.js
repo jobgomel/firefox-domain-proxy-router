@@ -17,8 +17,8 @@ browser.proxy.onRequest.addListener(
         onProxyMatch: (tabId, hostname) => {
             addHostToTab(tabId, hostname);
             setTabIconProxied(tabId);
-            // Push live-обновление в popup, если открыт
-            if (popupPort) {
+            // Push live-обновление в popup, только если это та же вкладка, для которой открыт popup
+            if (popupPort && tabId === popupTabId) {
                 const stats = getTabStats(tabId);
                 popupPort.postMessage({ action: 'statsUpdate', stats: stats ?? [] });
             }
@@ -47,6 +47,7 @@ browser.tabs.onRemoved.addListener((tabId) => {
 
 // 5. Live-статистика: порт для popup
 let popupPort = null;
+let popupTabId = null; // tabId, для которого открыт popup
 
 browser.runtime.onConnect.addListener((port) => {
     if (port.name !== 'popup-stats') return;
@@ -55,6 +56,7 @@ browser.runtime.onConnect.addListener((port) => {
 
     port.onMessage.addListener((message) => {
         if (message.action === 'getTabStats') {
+            popupTabId = message.tabId;
             const stats = getTabStats(message.tabId);
             port.postMessage({ action: 'statsUpdate', stats: stats ?? [] });
         }
@@ -63,6 +65,7 @@ browser.runtime.onConnect.addListener((port) => {
     port.onDisconnect.addListener(() => {
         if (popupPort === port) {
             popupPort = null;
+            popupTabId = null;
         }
     });
 });
